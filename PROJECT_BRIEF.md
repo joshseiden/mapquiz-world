@@ -38,14 +38,16 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-10 — Analytics plan agreed: Plausible over GA4/GoatCounter; domain purchase must come first
 - 2026-07-14 — Named the game Map Quiz; purchased mapquiz.world at DreamHost
 - 2026-07-14 — Adopted Claude Code workflow: GitHub repo + Netlify continuous deploy + this brief as shared context
+- 2026-07-14 — mapquiz.world DNS resolving (nameserver switch propagated)
+- 2026-07-14 — Renamed in-game title/header from GeoGuess to MapQuiz.world
 
 ## Current State
 
-Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to Netlify (continuous deploy from main, verified 2026-07-14). Domain mapquiz.world added as primary (www redirects); Netlify DNS zone created; DreamHost nameservers switched to dns1–dns4.p06.nsone.net on 2026-07-14 — DNS propagating, SSL will auto-provision once it lands. From now on, build work happens in Claude Code sessions: read this brief first, commit and push (push triggers deploy), update this brief before ending.
+Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to Netlify (continuous deploy from main, verified 2026-07-14). Domain mapquiz.world added as primary (www redirects); Netlify DNS zone created; DreamHost nameservers switched to dns1–dns4.p06.nsone.net on 2026-07-14 and now resolving. In-game title/header renamed from GeoGuess to MapQuiz.world to match. From now on, build work happens in Claude Code sessions: read this brief first, commit and push (push triggers deploy), update this brief before ending.
 
 ## Next Steps
 
-- [ ] Confirm mapquiz.world resolves and SSL certificate is provisioned (check a few hours after 2026-07-14 5pm ET)
+- [ ] Confirm SSL certificate has auto-provisioned for mapquiz.world
 - [ ] Fact-check trivia dataset (Claude-written, approximate) before wide sharing
 - [ ] Install Plausible analytics per plan above
 - [ ] Decide: clean up Wikipedia intros that end mid-sentence with "…"
