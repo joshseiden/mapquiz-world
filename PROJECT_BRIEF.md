@@ -41,12 +41,11 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 
 ## Current State
 
-Game is live and feature-complete at lighthearted-kitsune-076422.netlify.app. Repo initialized 2026-07-14; migrating to GitHub-linked Netlify deploy and connecting mapquiz.world via Netlify DNS (in progress).
+Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to Netlify (continuous deploy from main, verified 2026-07-14). Domain mapquiz.world added as primary (www redirects); Netlify DNS zone created; DreamHost nameservers switched to dns1–dns4.p06.nsone.net on 2026-07-14 — DNS propagating, SSL will auto-provision once it lands. From now on, build work happens in Claude Code sessions: read this brief first, commit and push (push triggers deploy), update this brief before ending.
 
 ## Next Steps
 
-- [ ] Link this repo to the Netlify site; verify continuous deploy
-- [ ] Connect mapquiz.world (Netlify DNS; nameserver change at DreamHost)
+- [ ] Confirm mapquiz.world resolves and SSL certificate is provisioned (check a few hours after 2026-07-14 5pm ET)
 - [ ] Fact-check trivia dataset (Claude-written, approximate) before wide sharing
 - [ ] Install Plausible analytics per plan above
 - [ ] Decide: clean up Wikipedia intros that end mid-sentence with "…"
