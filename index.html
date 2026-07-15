@@ -105,7 +105,7 @@
     background: var(--accent); color: #1a1200; cursor: pointer;
   }
   button:hover { filter: brightness(1.1); }
-  button.next-btn { width: 100%; margin-top: 16px; background: var(--good); color: #06220f; }
+  #guessBtn.next-state { background: var(--good); color: #06220f; white-space: nowrap; }
   .guesses { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
   .guess-dot { width: 12px; height: 12px; border-radius: 50%; background: #3a4a6b; }
   .guess-dot.used { background: var(--bad); }
@@ -854,17 +854,7 @@ const TRIVIA = {
       </div>`;
     }
 
-    if (revealedStage >= 3) {
-      html += `<button class="next-btn" id="nextBtn">Next country →</button>`;
-    }
     sidebar.innerHTML = html;
-    const nb = document.getElementById("nextBtn");
-    if (nb) {
-      nb.addEventListener("click", nextCountry);
-      // Defer focus past the current keystroke's default-action processing,
-      // so the Enter that ended the round can never activate this button.
-      setTimeout(() => nb.focus(), 100);
-    }
   }
 
   function updateStats() {
@@ -890,7 +880,8 @@ const TRIVIA = {
     feedback.textContent = ""; feedback.className = "feedback";
     wrongGuesses = []; renderWrongGuesses();
     input.value = ""; input.disabled = false;
-    guessBtn.style.display = "";
+    guessBtn.textContent = "Guess";
+    guessBtn.classList.remove("next-state");
     renderSidebar(0, null);
     showCountry(current);
     input.focus();
@@ -958,7 +949,10 @@ const TRIVIA = {
       remaining.splice(idx, 0, current);
     }
     input.disabled = true;
-    guessBtn.style.display = "none";
+    // Same button, second state: Guess becomes Next country → until the new round starts.
+    guessBtn.textContent = "Next country →";
+    guessBtn.classList.add("next-state");
+    roundEndedAt = Date.now();
     let points = 0;
     if (won) {
       points = [10, 5, 1][guessesUsed];
@@ -1001,7 +995,17 @@ const TRIVIA = {
     }
   }
 
-  guessBtn.addEventListener("click", submitGuess);
+  // Tap guard: the tap that ends the round lands on this same button, and a
+  // fast follow-up tap must not skip the reveal — mirror of the Enter-key
+  // guard below, but time-based since touch has no keyup to arm on.
+  let roundEndedAt = 0;
+  guessBtn.addEventListener("click", () => {
+    if (roundOver) {
+      if (Date.now() - roundEndedAt > 350) nextCountry();
+    } else {
+      submitGuess();
+    }
+  });
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       // preventDefault is CRITICAL: submitGuess may end the round and move
