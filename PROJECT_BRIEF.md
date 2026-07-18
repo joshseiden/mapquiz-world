@@ -1,6 +1,6 @@
 # Map Quiz (mapquiz.world) — Project Brief
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-18
 
 This is the living project brief shared between Claude Chat/Cowork (planning) and Claude Code (implementation). Claude Code: read this file at the start of every build session and update the Current State section before ending one.
 
@@ -44,6 +44,7 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-15 — Guess/Next-country merged into one two-state button (mobile UX, family play-testing feedback); committed and deployed
 - 2026-07-18 — Added footer copyright line (year, name, joshuaseiden.com link) — kept simple, no separate about page
 - 2026-07-18 — Built feedback form (Netlify Forms) per 2026-07-15 spec; not yet visually tested in a real browser (no headless browser tooling available in this environment) — recommend a quick manual check before/after this deploy
+- 2026-07-18 — Reworded feedback textarea placeholder to "Do you have feedback to share? An idea for an improvement? A problem?"
 
 ## Current State
 
