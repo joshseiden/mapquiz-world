@@ -154,6 +154,32 @@
     .layout { flex-direction: column; }
     .sidebar { width: 100%; }
   }
+  footer .feedback-link {
+    background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+    color: var(--muted); text-decoration: underline;
+  }
+  .feedback-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(8, 11, 18, 0.7);
+    align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+  }
+  .feedback-overlay.open { display: flex; }
+  .feedback-panel {
+    background: var(--panel); border-radius: 12px; padding: 22px; width: 100%; max-width: 380px;
+  }
+  .feedback-panel h2 { font-size: 17px; margin-bottom: 14px; }
+  .feedback-panel textarea, .feedback-panel input[type=text] {
+    width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 8px;
+    border: 1px solid #3a4a6b; background: var(--panel2); color: var(--text); outline: none;
+    font-family: inherit; margin-bottom: 10px;
+  }
+  .feedback-panel textarea:focus, .feedback-panel input[type=text]:focus { border-color: var(--accent); }
+  .feedback-panel textarea { resize: vertical; min-height: 90px; }
+  .feedback-honeypot { position: absolute; left: -9999px; }
+  .feedback-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .feedback-actions button.secondary { background: var(--panel2); color: var(--text); }
+  .feedback-disclosure { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+  .feedback-thanks { text-align: center; }
+  .feedback-thanks p { font-size: 17px; margin-bottom: 16px; }
 </style>
 </head>
 <body>
@@ -192,7 +218,8 @@
 </div>
 
 <footer>
-  &copy; 2026 Joshua Seiden &middot; <a href="https://joshuaseiden.com">joshuaseiden.com</a><br>
+  &copy; 2026 Joshua Seiden &middot; <a href="https://joshuaseiden.com">joshuaseiden.com</a> &middot;
+  <button type="button" class="feedback-link" id="feedbackLink">Feedback</button><br>
   Map data: <a href="https://www.naturalearthdata.com/">Natural Earth</a> via
   <a href="https://github.com/topojson/world-atlas">world-atlas</a> (public domain) &middot;
   Country data: <a href="https://github.com/mledoze/countries">mledoze/countries</a>
@@ -204,6 +231,30 @@
   entertainment purposes only. Borders shown follow the underlying map data and do not
   represent a position on any territorial dispute.
 </footer>
+
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-panel">
+    <form name="feedback" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="feedbackForm">
+      <input type="hidden" name="form-name" value="feedback">
+      <p class="feedback-honeypot"><label>Leave this field blank: <input name="bot-field"></label></p>
+      <input type="hidden" name="user_agent" id="feedbackUA">
+      <input type="hidden" name="game_context" id="feedbackContext">
+      <h2>Feedback</h2>
+      <textarea name="message" id="feedbackMessage" required placeholder="Found a bug? Have an idea? Something confusing?"></textarea>
+      <input type="text" name="name" placeholder="Name (optional — so I know who to thank)">
+      <div class="feedback-actions">
+        <button type="submit">Send</button>
+        <button type="button" class="secondary" id="feedbackCancel">Cancel</button>
+      </div>
+      <p class="feedback-disclosure" id="feedbackError" style="display:none;color:var(--bad)"></p>
+      <p class="feedback-disclosure">Your device type and current round are included to help fix bugs.</p>
+    </form>
+    <div class="feedback-thanks" id="feedbackThanks" style="display:none">
+      <p>Thanks! 🌍</p>
+      <button type="button" id="feedbackClose">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // Short country introductions from Wikipedia (CC BY-SA 4.0), fetched July 2026
@@ -1026,19 +1077,62 @@ const TRIVIA = {
   // arm advancing once the key has been RELEASED after the round ended.
   let advanceArmed = false;
   document.addEventListener("keydown", e => {
-    if (e.key !== "Enter" || !roundOver) return;
+    if (e.key !== "Enter" || !roundOver || feedbackOverlay.classList.contains("open")) return;
     e.preventDefault();
     e.stopPropagation();
     if (advanceArmed && !e.repeat) nextCountry();
   }, true);
   document.addEventListener("keyup", e => {
-    if (e.key === "Enter" && roundOver) advanceArmed = true;
+    if (e.key === "Enter" && roundOver && !feedbackOverlay.classList.contains("open")) advanceArmed = true;
   }, true);
   const origEndRound = endRound;
   endRound = function (won) {
     origEndRound(won);
     advanceArmed = false;
   };
+
+  const feedbackOverlay = document.getElementById("feedbackOverlay");
+  const feedbackForm = document.getElementById("feedbackForm");
+  const feedbackThanks = document.getElementById("feedbackThanks");
+  const feedbackMessage = document.getElementById("feedbackMessage");
+  const feedbackError = document.getElementById("feedbackError");
+
+  function openFeedback() {
+    feedbackForm.reset();
+    feedbackForm.style.display = "";
+    feedbackThanks.style.display = "none";
+    feedbackError.style.display = "none";
+    document.getElementById("feedbackUA").value = navigator.userAgent;
+    document.getElementById("feedbackContext").value =
+      `Round ${round}, last country: ${currentInfo ? currentInfo.name.common : "none"}`;
+    feedbackOverlay.classList.add("open");
+    feedbackMessage.focus();
+  }
+  function closeFeedback() {
+    feedbackOverlay.classList.remove("open");
+  }
+  document.getElementById("feedbackLink").addEventListener("click", openFeedback);
+  document.getElementById("feedbackCancel").addEventListener("click", closeFeedback);
+  document.getElementById("feedbackClose").addEventListener("click", closeFeedback);
+  feedbackOverlay.addEventListener("click", e => {
+    if (e.target === feedbackOverlay) closeFeedback();
+  });
+  feedbackForm.addEventListener("submit", e => {
+    e.preventDefault();
+    feedbackError.style.display = "none";
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(new FormData(feedbackForm)).toString(),
+    }).then(res => {
+      if (!res.ok) throw new Error("Bad response");
+      feedbackForm.style.display = "none";
+      feedbackThanks.style.display = "";
+    }).catch(() => {
+      feedbackError.textContent = "Something went wrong sending that — please try again.";
+      feedbackError.style.display = "";
+    });
+  });
 
   poolInfos = pool.map(f => factsById.get(String(f.id).padStart(3, "0")));
   pool.forEach((f, i) => featureByInfo.set(poolInfos[i], f));

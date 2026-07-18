@@ -43,6 +43,7 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-14 — SSL certificate provisioned for mapquiz.world
 - 2026-07-15 — Guess/Next-country merged into one two-state button (mobile UX, family play-testing feedback); committed and deployed
 - 2026-07-18 — Added footer copyright line (year, name, joshuaseiden.com link) — kept simple, no separate about page
+- 2026-07-18 — Built feedback form (Netlify Forms) per 2026-07-15 spec; not yet visually tested in a real browser (no headless browser tooling available in this environment) — recommend a quick manual check before/after this deploy
 
 ## Current State
 
@@ -58,8 +59,9 @@ Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to 
 
 - [ ] **Fix miss-recycling logic:** only recycle countries missed completely (three strikes) — not countries answered correctly on the second or third guess. (Replaces the current rule that also recycles two-hint wins.)
 - [ ] **Smarter wrong-guess feedback:** replace flat "Not quite" — if the guess is on a different continent, say so; if regionally correct, "not quite"; if within ~2 countries of the answer, "close!" *(Needs design: requires an adjacency/distance measure between countries — discuss approach before building.)*
-- [ ] **Increase border contrast** between countries on the map, if possible
-- [ ] **Feedback link or page** — a way for players to report issues/ideas
+- [x] **Increase border contrast** (done 2026-07-15: stroke #4a5878 at 0.5 — lighter grey-blue, target country untouched)
+- [x] **Feedback form via Netlify Forms** (built 2026-07-18, per spec agreed 2026-07-15) — form markup is static in index.html (Netlify's build-time HTML parser needs to see it, so it's CSS-hidden, not JS-injected); overlay opens from a "Feedback" link in the footer, submits via fetch, shows a thank-you state without navigating away. Fixed a bug found while implementing: the existing global Enter-key "advance to next round" listener didn't check whether the feedback overlay was open, so pressing Enter while typing feedback (after a round had ended) could have advanced the game underneath the modal — now gated on the overlay's open state.
+  - **Manual step still needed (Netlify dashboard, not code):** enable email notifications for the "feedback" form (Forms → notifications) so submissions reach Josh
 
 ## Licenses & Constraints
 
