@@ -41,6 +41,7 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-14 — mapquiz.world DNS resolving (nameserver switch propagated)
 - 2026-07-14 — Renamed in-game title/header from GeoGuess to MapQuiz.world
 - 2026-07-14 — SSL certificate provisioned for mapquiz.world
+- 2026-07-15 — Guess/Next-country merged into one two-state button (mobile UX, family play-testing feedback); committed and deployed
 
 ## Current State
 
@@ -52,12 +53,22 @@ Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to 
 - [ ] Install Plausible analytics per plan above
 - [ ] Decide: clean up Wikipedia intros that end mid-sentence with "…"
 
+## Backlog (added 2026-07-15, from family play-testing)
+
+- [ ] **Fix miss-recycling logic:** only recycle countries missed completely (three strikes) — not countries answered correctly on the second or third guess. (Replaces the current rule that also recycles two-hint wins.)
+- [ ] **Smarter wrong-guess feedback:** replace flat "Not quite" — if the guess is on a different continent, say so; if regionally correct, "not quite"; if within ~2 countries of the answer, "close!" *(Needs design: requires an adjacency/distance measure between countries — discuss approach before building.)*
+- [ ] **Increase border contrast** between countries on the map, if possible
+- [ ] **About statement or page** — what the game is, who made it, the licenses story
+- [ ] **Feedback link or page** — a way for players to report issues/ideas
+
 ## Licenses & Constraints
 
 Natural Earth via world-atlas (public domain), mledoze/countries (ODbL), Wikipedia intros (CC BY-SA 4.0), D3.js (ISC) — all attributed in the game footer. Trivia table is hand-written and approximate (disclaimer in footer). Shared leaderboard would require a backend — out of scope.
 
 ## Icebox
 
+- **Easier modes** — open question from play-testing: what would an easier mode look like? (e.g., multiple choice, continent-limited decks, hint-first mode — for younger players)
+- **Mobile layout pass** (added 2026-07-14 after family play-testing on iPhones/iPad): sidebar reveal content stacks below the map on narrow screens; review viewport sizing, touch targets, and reveal-content placement for phone-first play. The guess/next button merge (2026-07-14) was the first step.
 - "Review missed" flashcard recap screen (cycle through missed countries until each is answered right twice)
 - Explore mode: hover labels between rounds to study the neighborhood of a miss
 - Persist deck/history in localStorage across reloads
