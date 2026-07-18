@@ -72,6 +72,12 @@
     position: absolute; left: 12px; bottom: 10px; font-size: 11px; color: var(--muted);
     pointer-events: none;
   }
+  .review-badge {
+    display: none; position: absolute; left: 12px; top: 12px;
+    background: rgba(26, 34, 51, 0.9); border: 1px solid #5da9ff; color: #9fc9ff;
+    font-size: 12px; padding: 6px 12px; border-radius: 999px;
+    align-items: center; gap: 6px; pointer-events: none; white-space: nowrap;
+  }
   .points-pop {
     position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%);
     font-size: 64px; font-weight: 800; color: var(--good);
@@ -144,6 +150,7 @@
   .result-banner { font-size: 17px; font-weight: 700; margin-bottom: 12px; }
   .result-banner.good { color: var(--good); }
   .result-banner.bad { color: var(--bad); }
+  .result-banner .review-line { font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 4px; }
   footer {
     padding: 14px 24px 20px; font-size: 11px; color: var(--muted);
     line-height: 1.6; border-top: 1px solid #2a354d; margin-top: 4px;
@@ -675,6 +682,10 @@ const TRIVIA = {
   zoomHint.className = "zoom-hint";
   zoomHint.textContent = "Scroll or use +/− to zoom · drag to pan";
   mapWrap.appendChild(zoomHint);
+  const reviewBadge = document.createElement("div");
+  reviewBadge.className = "review-badge";
+  reviewBadge.innerHTML = `<span>🔄</span> Review — you missed this one`;
+  mapWrap.appendChild(reviewBadge);
   document.getElementById("zoomIn").addEventListener("click",
     () => svg.transition().duration(250).call(zoomBehavior.scaleBy, 1.6));
   document.getElementById("zoomOut").addEventListener("click",
@@ -819,6 +830,7 @@ const TRIVIA = {
   // ---------- Game state ----------
   let score = 0, correctCount = 0, missedCount = 0, round = 0;
   let current = null, currentInfo = null, guessesUsed = 0, roundOver = false;
+  let isReviewRound = false;
   let remaining = [];
 
   const el = id => document.getElementById(id);
@@ -880,6 +892,7 @@ const TRIVIA = {
       const won = result && result.won;
       html += `<div class="result-banner ${won ? "good" : "bad"}">
         ${won ? `✓ Correct! +${result.points} points` : "✗ Out of guesses"}
+        ${isReviewRound ? `<div class="review-line">${won ? "Got it this time ✓" : "It'll come back again."}</div>` : ""}
       </div>
       <div class="flag">${info.flag || ""}</div>
       <h2>${info.name.common}</h2>
@@ -925,6 +938,8 @@ const TRIVIA = {
     if (remaining.length === 0) remaining = d3.shuffle(pool.slice());
     current = remaining.pop();
     currentInfo = factsById.get(String(current.id).padStart(3, "0"));
+    isReviewRound = guessHistory.get(current) === "lost";
+    reviewBadge.style.display = isReviewRound ? "flex" : "none";
     guessesUsed = 0;
     roundOver = false;
     round++;
@@ -988,15 +1003,13 @@ const TRIVIA = {
     roundOver = true;
     guessHistory.set(current, won ? "won" : "lost");
 
-    // Spaced repetition: countries you struggled with come back while they're
-    // still fresh. Misses return in 5-10 rounds; wins that needed both hints
-    // (3rd guess) return in 15-25. Clean wins stay benched until the deck
-    // naturally reshuffles. remaining.pop() deals from the END of the array,
-    // so "N rounds ahead" means N positions from the end.
-    if (!won || guessesUsed === 2) {
-      const ahead = won
-        ? 15 + Math.floor(Math.random() * 11)  // shaky win: 15-25 rounds
-        : 5 + Math.floor(Math.random() * 6);   // miss: 5-10 rounds
+    // Spaced repetition: only complete misses (three strikes) come back, in
+    // 8-15 rounds, while they're still fresh but not so soon it feels like an
+    // immediate repeat. Any win — even one that needed both hints — stays
+    // benched until the deck naturally reshuffles. remaining.pop() deals from
+    // the END of the array, so "N rounds ahead" means N positions from the end.
+    if (!won) {
+      const ahead = 8 + Math.floor(Math.random() * 8);  // 8-15 rounds
       const idx = Math.max(0, remaining.length - ahead);
       remaining.splice(idx, 0, current);
     }

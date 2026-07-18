@@ -58,11 +58,15 @@ Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to 
 
 ## Backlog (added 2026-07-15, from family play-testing)
 
-- [ ] **Fix miss-recycling logic:** only recycle countries missed completely (three strikes) — not countries answered correctly on the second or third guess. (Replaces the current rule that also recycles two-hint wins.)
+- [x] **Miss-recycling overhaul** (built 2026-07-18, per spec agreed 2026-07-18):
+  1. Recycling now triggers only on complete misses (`!won` in `endRound`) — the old branch that also recycled 3rd-guess wins is gone. Return window widened from 5–10 to 8–15 rounds.
+  2. Review badge: a `.review-badge` pill (top-left of the map card, same absolutely-positioned-in-`mapWrap` pattern as the zoom controls/points-pop), created once at setup and toggled via `display: flex`/`none`. `isReviewRound` flag is set in `nextCountry()` from `guessHistory.get(current) === "lost"`, exactly per the implementation note in the spec — so it also lights up for a previously-missed country resurfacing via a natural deck reshuffle, not just via the spaced-repetition splice.
+  3. Reveal reinforcement line added inside the result banner, gated on `isReviewRound`.
+  - **Not yet visually tested in a real browser** (same environment limitation as the feedback form — no headless browser tooling available); verified by tracing the logic and confirming the JS parses, but worth a play-test pass, especially the badge's timing/visibility across a reshuffle.
 - [ ] **Smarter wrong-guess feedback:** replace flat "Not quite" — if the guess is on a different continent, say so; if regionally correct, "not quite"; if within ~2 countries of the answer, "close!" *(Needs design: requires an adjacency/distance measure between countries — discuss approach before building.)*
 - [x] **Increase border contrast** (done 2026-07-15: stroke #4a5878 at 0.5 — lighter grey-blue, target country untouched)
 - [x] **Feedback form via Netlify Forms** (built 2026-07-18, per spec agreed 2026-07-15) — form markup is static in index.html (Netlify's build-time HTML parser needs to see it, so it's CSS-hidden, not JS-injected); overlay opens from a "Feedback" link in the footer, submits via fetch, shows a thank-you state without navigating away. Fixed a bug found while implementing: the existing global Enter-key "advance to next round" listener didn't check whether the feedback overlay was open, so pressing Enter while typing feedback (after a round had ended) could have advanced the game underneath the modal — now gated on the overlay's open state.
-  - **Manual step still needed (Netlify dashboard, not code):** enable email notifications for the "feedback" form (Forms → notifications) so submissions reach Josh
+  - Netlify dashboard config done 2026-07-18: form detection enabled (was off — account-level default; required a redeploy for the form to register), "feedback" form active, email notification → joshseiden@gmail.com (subject "MapQuiz.world feedback"). End-to-end test confirmed: form → dashboard → inbox.
 
 ## Licenses & Constraints
 
