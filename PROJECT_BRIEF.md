@@ -48,6 +48,7 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-18 — Miss-recycling overhaul (full-misses-only, review badge, reveal line) built and play-tested on the live deploy — confirmed working
 - 2026-07-19 — "Known for" hint data drafted, reviewed (165 A/B/C choices by Josh), fact-checked, and finalized in known-for.json
 - 2026-07-19 — Adopted branch → deploy preview → play-test → merge workflow (see Build Workflow above); direct commits to main retired
+- 2026-07-22 — Phase 1 hint overhaul built on `hint-overhaul` branch, PR opened for deploy-preview play-test
 
 ## Current State
 
@@ -80,10 +81,11 @@ Never commit directly to main except for trivial brief-only edits.
   3. Reveal reinforcement line added inside the result banner, gated on `isReviewRound`.
   - Play-tested 2026-07-18 on the live deploy — confirmed working.
 - [ ] **Smarter wrong-guess feedback:** replace flat "Not quite" — if the guess is on a different continent, say so; if regionally correct, "not quite"; if within ~2 countries of the answer, "close!" *(Needs design: requires an adjacency/distance measure between countries — discuss approach before building. Note: the `borders` field used by the hint overhaul below provides the adjacency graph for this.)*
-- [ ] **Phase 1 — Hint overhaul** (spec agreed 2026-07-18; build before Learn mode — it's the data plumbing). Problem: current hints (agricultural products, industries) are low-resonance — they describe many countries and connect to nothing players know.
-  1. **Curated "known for" hint — DATA READY:** all 165 lines were drafted, reviewed, and chosen by Josh (2026-07-19) and live in `known-for.json` in the repo root. Build step: embed this data into index.html (per the no-runtime-fetch pattern) and delete the standalone JSON afterward, or keep it as the source of record — implementer's choice, note it here. Fact-check checklist for Josh: `known-for-factcheck.md` (merge with the existing trivia fact-check task — one pass; the approximate-data disclaimer covers it until then).
-  2. **New structured hints from existing data** (mledoze countries.json, already self-hosted): capital city and land borders. Borders: map ISO codes in the `borders` field to display names. Island nations have an empty `borders` array — fall back to region/subregion text (e.g. "Island nation in the Caribbean").
-  3. **New Classic-mode hint ladder:** wrong guess 1 → "Known for" line; wrong guess 2 → "Capital: X · Borders: Y, Z". Agricultural products and industries demote to reveal-time facts in the sidebar (keep the data, just stop using it as hints).
+- [x] **Phase 1 — Hint overhaul** (built 2026-07-22, per spec agreed 2026-07-18; build before Learn mode — it's the data plumbing):
+  1. Curated "known for" data embedded as `KNOWN_FOR` in index.html (next to `TRIVIA`); the standalone `known-for.json` was deleted — index.html is now the source of record. `known-for-factcheck-revised.md` kept in the repo as the review record.
+  2. `bordersText()` maps each country's `borders` (ISO alpha-3 codes) to display names via a new `factsByCca3` lookup built alongside the existing `factsById`. Island nations (empty `borders` array) fall back to `"Island nation in " + subregion/region`.
+  3. `buildRows()` hint ladder reordered: stage 1 = "Known for", stage 2 = "Capital" + "Borders" (two rows, revealed together on the 2nd wrong guess). Agricultural products, major industries, and population demoted to stage 3 (reveal-time only) — data untouched, just no longer used as hints.
+  - Not yet play-tested in a browser — recommend a play-test pass on the deploy preview before merge.
 - [ ] **Phase 2 — Learn mode** (spec agreed 2026-07-18; requires Phase 1). On-ramp for players who struggle even on well-known countries — switches the game from recall to recognition, which is where shape→name associations get built.
   - **Mode picker on load:** two buttons — **"Learn the map"** and **"Test yourself"** (current game, unchanged). Deliberately not named "easy/hard". A small mode-switch link in the footer restarts in the other mode.
   - **Round format:** the "known for" hint displays up front as the question line; map highlights the country as usual; the text input row is replaced by **4 tappable answer buttons** (2×2 grid on phones, thumb-sized). One tap resolves the round: correct → +5 points and celebration; wrong → tapped button marked red, correct button green, then normal reveal.
