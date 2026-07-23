@@ -47,6 +47,7 @@
   .country { fill: var(--land); stroke: #4a5878; stroke-width: 0.5; vector-effect: non-scaling-stroke; }
   /* Subtle history tints: green = guessed correctly, red = missed */
   .country.done-won { fill: #2c5044; }
+  .country.done-tap { fill: #26443a; }
   .country.done-lost { fill: #533039; }
   .country.target { fill: var(--accent); stroke: #fff; stroke-width: 0.8; }
   .country.wrong-flash { animation: wrongPulse 0.5s ease 3; }
@@ -78,6 +79,7 @@
     font-size: 12px; padding: 6px 12px; border-radius: 999px;
     align-items: center; gap: 6px; pointer-events: none; white-space: nowrap;
   }
+  .review-badge.promotion-badge { border-color: var(--accent); color: var(--accent); }
   .points-pop {
     position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%);
     font-size: 64px; font-weight: 800; color: var(--good);
@@ -126,6 +128,24 @@
   }
   .feedback.good { color: var(--good); font-weight: 600; }
   .feedback.bad { color: var(--bad); }
+  .learn-question {
+    background: var(--panel2); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+  }
+  .learn-question .lq-label {
+    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+    display: block; margin-bottom: 2px;
+  }
+  #learnQuestionText { font-size: 15px; }
+  .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+  .answer-btn {
+    padding: 16px 12px; font-size: 15px; font-weight: 600; border-radius: 10px;
+    background: var(--panel2); color: var(--text); border: 1px solid #3a4a6b; cursor: pointer;
+    text-align: center;
+  }
+  .answer-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .answer-btn:disabled { cursor: default; }
+  .answer-btn.correct { background: rgba(62, 207, 122, 0.18); border-color: var(--good); color: var(--good); }
+  .answer-btn.wrong-tap { background: rgba(255, 93, 93, 0.18); border-color: var(--bad); color: var(--bad); }
   .sidebar {
     width: 320px; flex-shrink: 0; background: var(--panel); border-radius: 12px; padding: 20px;
   }
@@ -187,6 +207,34 @@
   .feedback-disclosure { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
   .feedback-thanks { text-align: center; }
   .feedback-thanks p { font-size: 17px; margin-bottom: 16px; }
+  .mode-panel { max-width: 380px; }
+  .mode-panel h2 { font-size: 20px; margin-bottom: 8px; }
+  .mode-intro { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+  .mode-start { width: 100%; }
+  .hard-mode-stat { position: relative; text-align: left; }
+  .hard-mode-control { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .hard-mode-switch {
+    position: relative; width: 40px; height: 22px; border-radius: 999px; padding: 0;
+    background: #3a4a6b; border: none; cursor: pointer; flex-shrink: 0;
+  }
+  .hard-mode-switch.on { background: var(--accent); }
+  .hard-mode-knob {
+    position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+    background: #8fa0b8; transition: left 0.15s ease, background 0.15s ease;
+  }
+  .hard-mode-switch.on .hard-mode-knob { left: 20px; background: #1a1200; }
+  .hard-mode-state { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .hard-mode-state.on { color: var(--accent); }
+  .hard-mode-popover {
+    position: absolute; top: 100%; left: 0; margin-top: 8px; width: 220px; z-index: 10;
+    background: var(--panel2); border: 1px solid #3a4a6b; border-radius: 8px; padding: 10px 12px;
+    font-size: 12px; color: var(--muted); line-height: 1.5; text-align: left;
+  }
+  .popover-link {
+    background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+    color: var(--accent); text-decoration: underline; font-weight: 700;
+  }
+  .popover-link.cancel { color: var(--muted); font-weight: 400; }
 </style>
 </head>
 <body>
@@ -194,6 +242,21 @@
 <header>
   <h1>Map<span>Quiz</span>.world</h1>
   <div class="stats">
+    <div class="stat hard-mode-stat">
+      <div class="label">Hard mode</div>
+      <div class="hard-mode-control">
+        <button type="button" class="hard-mode-switch" id="hardModeSwitch" role="switch" aria-checked="false" aria-label="Hard mode">
+          <span class="hard-mode-knob"></span>
+        </button>
+        <span class="hard-mode-state" id="hardModeState">OFF</span>
+      </div>
+      <div class="hard-mode-popover" id="hardModePopover" style="display:none">
+        Resets your score, keeps your map —
+        <button type="button" class="popover-link" id="hardModeFlip">flip it</button>
+        &middot;
+        <button type="button" class="popover-link cancel" id="hardModeCancel">cancel</button>
+      </div>
+    </div>
     <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
     <div class="stat"><div class="label">Correct</div><div class="value" id="correct">0</div></div>
     <div class="stat"><div class="label">Missed</div><div class="value" id="missed" style="color:var(--bad)">0</div></div>
@@ -207,11 +270,16 @@
       <div class="loading" id="loading">Loading world map…</div>
     </div>
     <div class="controls" id="controls" style="display:none">
-      <div class="guess-row">
+      <div class="learn-question" id="learnQuestion" style="display:none">
+        <span class="lq-label">Known for</span>
+        <div id="learnQuestionText"></div>
+      </div>
+      <div class="answer-grid" id="answerGrid" style="display:none"></div>
+      <div class="guess-row" id="guessRow">
         <input type="text" id="guessInput" placeholder="Which country is highlighted?" autocomplete="off">
         <button id="guessBtn">Guess</button>
       </div>
-      <div class="guesses">
+      <div class="guesses" id="guesses">
         <div class="guess-dot" id="dot1"></div>
         <div class="guess-dot" id="dot2"></div>
         <div class="guess-dot" id="dot3"></div>
@@ -260,6 +328,18 @@
       <p>Thanks! 🌍</p>
       <button type="button" id="feedbackClose">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="feedback-overlay mode-overlay" id="modeOverlay">
+  <div class="feedback-panel mode-panel">
+    <h2>Welcome to MapQuiz.world</h2>
+    <p class="mode-intro">A mystery country lights up on the map — can you name it? Hints help when
+      you're stuck, and countries you miss come back until you know them.</p>
+    <p class="mode-intro">The game gets harder as you play — you'll graduate from tapping answers to
+      typing them as you master each country. Want a real challenge right away? Flip on Hard mode, up
+      by your score.</p>
+    <button type="button" class="mode-start" id="modeStartBtn">Start</button>
   </div>
 </div>
 
@@ -774,6 +854,18 @@ const KNOWN_FOR = {
   ZWE: "Home of Hwange's great elephant herds"
 };
 
+// Learn mode starter deck (54 widely-known countries), reviewed by Josh 2026-07-22.
+// Grows one country at a time as the player progresses — see growDeck() below.
+const STARTER_DECK = [
+  "USA", "CAN", "MEX", "BRA", "ARG", "CHL", "COL", "PER", "CUB", "PAN",
+  "GBR", "IRL", "FRA", "DEU", "ITA", "ESP", "PRT", "NLD", "BEL", "CHE",
+  "AUT", "GRC", "SWE", "NOR", "POL", "UKR", "RUS", "TUR", "CZE", "HUN",
+  "ROU", "CHN", "JPN", "IND", "KOR", "PRK", "VNM", "THA", "IDN", "PHL",
+  "PAK", "AFG", "IRN", "IRQ", "ISR", "SAU", "EGY", "MAR", "NGA", "KEN",
+  "ETH", "ZAF", "AUS", "NZL"
+];
+const MODE_KEY = "mapquiz-mode";
+
 (async function () {
   const MAP_URL = "vendor/countries-110m.json";
   const FACTS_URL = "vendor/countries.json";
@@ -858,6 +950,10 @@ const KNOWN_FOR = {
   reviewBadge.className = "review-badge";
   reviewBadge.innerHTML = `<span>🔄</span> Review — you missed this one`;
   mapWrap.appendChild(reviewBadge);
+  const promotionBadge = document.createElement("div");
+  promotionBadge.className = "review-badge promotion-badge";
+  promotionBadge.innerHTML = `<span>★</span> You know this one — type it!`;
+  mapWrap.appendChild(promotionBadge);
   document.getElementById("zoomIn").addEventListener("click",
     () => svg.transition().duration(250).call(zoomBehavior.scaleBy, 1.6));
   document.getElementById("zoomOut").addEventListener("click",
@@ -865,12 +961,15 @@ const KNOWN_FOR = {
   document.getElementById("zoomReset").addEventListener("click",
     () => svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity));
 
-  // Per-country history: feature -> "won" | "lost"
+  // Per-country history: feature -> "won" | "lost" (drives recycling + review badge)
   const guessHistory = new Map();
+  // Per-country map tint: feature -> "won" | "tap" | "lost" (drives the two-tier
+  // Learn-mode mastery tint; "won" = full green, "tap" = soft green pre-mastery)
+  const mapTint = new Map();
   function countryClass(d, target) {
     let cls = "country";
     if (d === target) cls += " target";
-    else if (guessHistory.has(d)) cls += " done-" + guessHistory.get(d);
+    else if (mapTint.has(d)) cls += " done-" + mapTint.get(d);
     return cls;
   }
 
@@ -959,6 +1058,7 @@ const KNOWN_FOR = {
 
   let poolInfos = []; // filled after pool is known
   const featureByInfo = new Map(); // country info -> map feature
+  const featureByCca3 = new Map(); // ISO alpha-3 -> map feature
 
   // Which country did the user actually name? (exact match, else closest typo)
   function resolveGuessedCountry(guess) {
@@ -1009,6 +1109,136 @@ const KNOWN_FOR = {
   const input = el("guessInput"), feedback = el("feedback"),
         sidebar = el("sidebar"), guessBtn = el("guessBtn"),
         wrongList = el("wrongList");
+
+  // ---------- Learn mode ----------
+  // mode: "learn" | "test" | null (null = not yet chosen, welcome overlay showing)
+  let mode = null;
+  // roundKind: "classic" (Test yourself, or Learn mode's typed hint ladder is
+  // unused) | "tap" (Learn mode multiple choice) | "graduation" (a Learn-mode
+  // country answered correctly by tap twice, now a one-shot-at-mastery typed
+  // round reusing the Classic 3-guess flow)
+  let roundKind = "classic";
+  let answerButtons = [];
+
+  // learnDeckCca3 only grows (starter set plus deck-growth additions); it never
+  // shrinks, so switching Test -> Learn always lands on at least this set.
+  const learnDeckCca3 = new Set(STARTER_DECK);
+  // Countries drawn at least once this session, in either mode — folded into
+  // the Learn deck on a Test -> Learn switch so recently-seen countries aren't
+  // dropped.
+  const sessionEncountered = new Set();
+  // cca3 codes mastered (won a Learn-mode graduation round) — permanently
+  // excluded from the Learn deck for the rest of the session.
+  const masteredSet = new Set();
+  // Per-country Learn-mode progress, keyed by feature (same key as
+  // guessHistory): { tapCorrect, graduated }. Persists across mode switches.
+  const learnState = new Map();
+  let learnCorrectTotal = 0;
+
+  let deckPool = []; // the feature array eligible for the CURRENT mode
+
+  function loadMode() {
+    try { return localStorage.getItem(MODE_KEY); } catch (e) { return null; }
+  }
+  function saveMode(m) {
+    try { localStorage.setItem(MODE_KEY, m); } catch (e) { /* private browsing — fine */ }
+  }
+
+  function computeDeckPool() {
+    if (mode === "learn") {
+      deckPool = pool.filter((f, i) => {
+        const cca3 = poolInfos[i].cca3;
+        return (learnDeckCca3.has(cca3) || sessionEncountered.has(cca3)) && !masteredSet.has(cca3);
+      });
+    } else {
+      deckPool = pool;
+    }
+  }
+
+  // Deck growth: candidates outside the starter deck, most-populous first —
+  // "roughly by prominence/population" per spec, using the TRIVIA population
+  // field already embedded for the trivia table.
+  let growthOrder = null;
+  let growthIndex = 0;
+  function growDeck() {
+    if (!growthOrder) {
+      growthOrder = poolInfos
+        .filter(info => !STARTER_DECK.includes(info.cca3))
+        .sort((a, b) => TRIVIA[b.cca3][0] - TRIVIA[a.cca3][0])
+        .map(info => info.cca3);
+    }
+    while (growthIndex < growthOrder.length && learnDeckCca3.has(growthOrder[growthIndex])) growthIndex++;
+    if (growthIndex >= growthOrder.length) return; // fully grown — every country is in the deck
+    const next = growthOrder[growthIndex++];
+    learnDeckCca3.add(next);
+    computeDeckPool(); // keep deckPool in sync so future reshuffles include it too
+    const feature = featureByCca3.get(next);
+    if (feature && !masteredSet.has(next) && !remaining.includes(feature)) {
+      const idx = Math.floor(Math.random() * (remaining.length + 1));
+      remaining.splice(idx, 0, feature);
+    }
+  }
+
+  // Early game: famous, far-apart wrong options (drawn from the starter deck,
+  // a different region than the target). Past ~10 correct: prefer same-
+  // subregion distractors when enough exist — the difficulty slope inside
+  // Learn mode.
+  function pickDistractors(target, n) {
+    const preferSameSubregion = learnCorrectTotal >= 10;
+    const candidates = poolInfos.filter(info => info !== target);
+    const chosen = [];
+    if (preferSameSubregion) {
+      const same = d3.shuffle(candidates.filter(c => c.subregion === target.subregion));
+      for (const c of same) { if (chosen.length >= n) break; chosen.push(c); }
+    }
+    if (chosen.length < n) {
+      const famous = d3.shuffle(candidates.filter(c =>
+        STARTER_DECK.includes(c.cca3) && c.region !== target.region && !chosen.includes(c)));
+      for (const c of famous) { if (chosen.length >= n) break; chosen.push(c); }
+    }
+    if (chosen.length < n) {
+      const rest = d3.shuffle(candidates.filter(c => !chosen.includes(c)));
+      for (const c of rest) { if (chosen.length >= n) break; chosen.push(c); }
+    }
+    return chosen.slice(0, n);
+  }
+
+  function renderAnswerGrid() {
+    const options = d3.shuffle([currentInfo, ...pickDistractors(currentInfo, 3)]);
+    const grid = el("answerGrid");
+    grid.innerHTML = "";
+    answerButtons = options.map(info => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "answer-btn";
+      btn.textContent = info.name.common;
+      btn._info = info;
+      btn.addEventListener("click", () => resolveTapAnswer(info));
+      grid.appendChild(btn);
+      return btn;
+    });
+  }
+
+  function resolveTapAnswer(selected) {
+    if (roundOver) return;
+    const correct = selected === currentInfo;
+    answerButtons.forEach(b => {
+      b.disabled = true;
+      if (b._info === currentInfo) b.classList.add("correct");
+      else if (b._info === selected) b.classList.add("wrong-tap");
+    });
+    endRound(correct);
+  }
+
+  // Hard mode is UI vocabulary only — internally still the "learn"/"test" mode
+  // built for Phase 2. ON = Test yourself (typed, harder); OFF = Learn.
+  function updateHardModeUI() {
+    const hardOn = mode === "test";
+    el("hardModeSwitch").classList.toggle("on", hardOn);
+    el("hardModeSwitch").setAttribute("aria-checked", String(hardOn));
+    el("hardModeState").textContent = hardOn ? "ON" : "OFF";
+    el("hardModeState").classList.toggle("on", hardOn);
+  }
 
   let wrongGuesses = [];
   function renderWrongGuesses() {
@@ -1071,8 +1301,10 @@ const KNOWN_FOR = {
     if (revealedStage >= 3) {
       const won = result && result.won;
       html += `<div class="result-banner ${won ? "good" : "bad"}">
-        ${won ? `✓ Correct! +${result.points} points` : "✗ Out of guesses"}
-        ${isReviewRound ? `<div class="review-line">${won ? "Got it this time ✓" : "It'll come back again."}</div>` : ""}
+        ${won ? `✓ Correct! +${result.points} points` : roundKind === "tap" ? "✗ Incorrect guess" : "✗ Out of guesses"}
+        ${roundKind === "graduation"
+          ? `<div class="review-line">${won ? "Mastered! You'll see this one as a typed round from now on." : "Back to multiple choice for this one."}</div>`
+          : isReviewRound ? `<div class="review-line">${won ? "Got it this time ✓" : "It'll come back again."}</div>` : ""}
       </div>
       <div class="flag">${info.flag || ""}</div>
       <h2>${info.name.common}</h2>
@@ -1115,11 +1347,24 @@ const KNOWN_FOR = {
   }
 
   function nextCountry() {
-    if (remaining.length === 0) remaining = d3.shuffle(pool.slice());
+    hideHardModePopover(); // a fresh round implicitly cancels a pending hard-mode popover
+    if (remaining.length === 0) remaining = d3.shuffle(deckPool.slice());
     current = remaining.pop();
     currentInfo = factsById.get(String(current.id).padStart(3, "0"));
+    sessionEncountered.add(currentInfo.cca3);
+
+    if (mode === "learn") {
+      const st = learnState.get(current) || { tapCorrect: 0, graduated: false };
+      learnState.set(current, st);
+      roundKind = st.graduated ? "graduation" : "tap";
+    } else {
+      roundKind = "classic";
+    }
+
     isReviewRound = guessHistory.get(current) === "lost";
-    reviewBadge.style.display = isReviewRound ? "flex" : "none";
+    reviewBadge.style.display = (isReviewRound && roundKind !== "graduation") ? "flex" : "none";
+    promotionBadge.style.display = roundKind === "graduation" ? "flex" : "none";
+
     guessesUsed = 0;
     roundOver = false;
     round++;
@@ -1131,7 +1376,22 @@ const KNOWN_FOR = {
     guessBtn.classList.remove("next-state");
     renderSidebar(0, null);
     showCountry(current);
-    input.focus();
+
+    if (roundKind === "tap") {
+      el("learnQuestionText").textContent = KNOWN_FOR[currentInfo.cca3];
+      el("learnQuestion").style.display = "";
+      el("answerGrid").style.display = "grid";
+      el("guessRow").style.display = "none";
+      el("guesses").style.display = "none";
+      renderAnswerGrid();
+      if (answerButtons[0]) answerButtons[0].focus();
+    } else {
+      el("learnQuestion").style.display = "none";
+      el("answerGrid").style.display = "none";
+      el("guessRow").style.display = "flex";
+      el("guesses").style.display = "flex";
+      input.focus();
+    }
   }
 
   function celebrate(points) {
@@ -1183,11 +1443,38 @@ const KNOWN_FOR = {
     roundOver = true;
     guessHistory.set(current, won ? "won" : "lost");
 
-    // Spaced repetition: only complete misses (three strikes) come back, in
-    // 8-15 rounds, while they're still fresh but not so soon it feels like an
-    // immediate repeat. Any win — even one that needed both hints — stays
-    // benched until the deck naturally reshuffles. remaining.pop() deals from
-    // the END of the array, so "N rounds ahead" means N positions from the end.
+    // Learn-mode graduation bookkeeping. Tap rounds: 2 correct taps graduate a
+    // country to a typed round. Graduation rounds: a win masters it (benched
+    // for the rest of the session); a loss un-graduates it — "no spiral", it
+    // just goes back to multiple choice next time.
+    if (roundKind === "tap") {
+      mapTint.set(current, won ? "tap" : "lost");
+      if (won) {
+        const st = learnState.get(current);
+        st.tapCorrect++;
+        if (st.tapCorrect >= 2) st.graduated = true;
+      }
+    } else if (roundKind === "graduation") {
+      if (won) {
+        mapTint.set(current, "won");
+        masteredSet.add(currentInfo.cca3);
+        if (mode === "learn") computeDeckPool(); // keep deckPool from re-offering a mastered country
+      } else {
+        mapTint.set(current, "lost");
+        const st = learnState.get(current);
+        st.graduated = false;
+        st.tapCorrect = 0;
+      }
+    } else {
+      mapTint.set(current, won ? "won" : "lost");
+    }
+
+    // Spaced repetition: only complete misses (three strikes, or a wrong tap)
+    // come back, in 8-15 rounds, while they're still fresh but not so soon it
+    // feels like an immediate repeat. Any win — even one that needed both
+    // hints — stays benched until the deck naturally reshuffles.
+    // remaining.pop() deals from the END of the array, so "N rounds ahead"
+    // means N positions from the end.
     if (!won) {
       const ahead = 8 + Math.floor(Math.random() * 8);  // 8-15 rounds
       const idx = Math.max(0, remaining.length - ahead);
@@ -1197,18 +1484,32 @@ const KNOWN_FOR = {
     // Same button, second state: Guess becomes Next country → until the new round starts.
     guessBtn.textContent = "Next country →";
     guessBtn.classList.add("next-state");
+    if (roundKind === "tap") {
+      el("learnQuestion").style.display = "none";
+      el("answerGrid").style.display = "none";
+      el("guessRow").style.display = "flex";
+      el("guesses").style.display = "none";
+    }
     roundEndedAt = Date.now();
     let points = 0;
     if (won) {
-      points = [10, 5, 1][guessesUsed];
+      if (roundKind === "tap") points = 5;
+      else if (roundKind === "graduation") points = 10;
+      else points = [10, 5, 1][guessesUsed];
       score += points;
       correctCount++;
+      if (mode === "learn") {
+        learnCorrectTotal++;
+        if (learnCorrectTotal % 3 === 0) growDeck();
+      }
       feedback.textContent = `🎉 Correct — it's ${currentInfo.name.common}! +${points} points`;
       feedback.className = "feedback good";
       celebrate(points);
     } else {
       missedCount++;
-      feedback.textContent = `Out of guesses. The answer was ${currentInfo.name.common}.`;
+      feedback.textContent = roundKind === "tap"
+        ? `Incorrect guess. The answer was ${currentInfo.name.common}.`
+        : `Out of guesses. The answer was ${currentInfo.name.common}.`;
       feedback.className = "feedback bad";
     }
     updateStats();
@@ -1270,13 +1571,16 @@ const KNOWN_FOR = {
   // arm advancing once the key has been RELEASED after the round ended.
   let advanceArmed = false;
   document.addEventListener("keydown", e => {
-    if (e.key !== "Enter" || !roundOver || feedbackOverlay.classList.contains("open")) return;
+    if (e.key !== "Enter" || !roundOver) return;
+    if (feedbackOverlay.classList.contains("open") || modeOverlay.classList.contains("open")) return;
     e.preventDefault();
     e.stopPropagation();
     if (advanceArmed && !e.repeat) nextCountry();
   }, true);
   document.addEventListener("keyup", e => {
-    if (e.key === "Enter" && roundOver && !feedbackOverlay.classList.contains("open")) advanceArmed = true;
+    if (e.key !== "Enter" || !roundOver) return;
+    if (feedbackOverlay.classList.contains("open") || modeOverlay.classList.contains("open")) return;
+    advanceArmed = true;
   }, true);
   const origEndRound = endRound;
   endRound = function (won) {
@@ -1291,6 +1595,7 @@ const KNOWN_FOR = {
   const feedbackError = document.getElementById("feedbackError");
 
   function openFeedback() {
+    if (modeOverlay.classList.contains("open")) return;
     feedbackForm.reset();
     feedbackForm.style.display = "";
     feedbackThanks.style.display = "none";
@@ -1327,10 +1632,83 @@ const KNOWN_FOR = {
     });
   });
 
+  // ---------- Mode overlay — first-visit welcome ONLY, single Start button.
+  // Hard mode always starts OFF; the header switch is the only in-game
+  // control for it. ----------
+  const modeOverlay = document.getElementById("modeOverlay");
+  const modeStartBtn = document.getElementById("modeStartBtn");
+
+  function openModeOverlay() {
+    modeOverlay.classList.add("open");
+  }
+  function closeModeOverlay() {
+    modeOverlay.classList.remove("open");
+  }
+
+  function startGame() {
+    computeDeckPool();
+    remaining = d3.shuffle(deckPool.slice());
+    document.getElementById("controls").style.display = "";
+    nextCountry();
+  }
+
+  modeStartBtn.addEventListener("click", () => {
+    mode = "learn"; // first visit always starts with Hard mode OFF
+    saveMode(mode);
+    updateHardModeUI();
+    closeModeOverlay();
+    startGame();
+  });
+
+  // ---------- Hard mode switch (header) + confirmation popover ----------
+  function applyModeSwitch() {
+    computeDeckPool();
+    remaining = d3.shuffle(deckPool.filter(f => f !== current).slice());
+    score = 0;
+    round = 0;
+    nextCountry();
+  }
+
+  const hardModeSwitch = document.getElementById("hardModeSwitch");
+  const hardModePopover = document.getElementById("hardModePopover");
+  const hardModeFlip = document.getElementById("hardModeFlip");
+  const hardModeCancel = document.getElementById("hardModeCancel");
+  let pendingHardModeFlip = false;
+
+  function hideHardModePopover() {
+    hardModePopover.style.display = "none";
+    pendingHardModeFlip = false;
+  }
+
+  hardModeSwitch.addEventListener("click", () => {
+    if (!mode) return; // game hasn't started yet — the welcome overlay is already open
+    pendingHardModeFlip = true;
+    hardModePopover.style.display = "";
+  });
+  hardModeFlip.addEventListener("click", () => {
+    if (!pendingHardModeFlip) return;
+    mode = mode === "learn" ? "test" : "learn";
+    saveMode(mode);
+    updateHardModeUI();
+    hideHardModePopover();
+    applyModeSwitch();
+  });
+  hardModeCancel.addEventListener("click", hideHardModePopover);
+
   poolInfos = pool.map(f => factsById.get(String(f.id).padStart(3, "0")));
-  pool.forEach((f, i) => featureByInfo.set(poolInfos[i], f));
-  document.getElementById("controls").style.display = "";
-  nextCountry();
+  pool.forEach((f, i) => {
+    featureByInfo.set(poolInfos[i], f);
+    featureByCca3.set(poolInfos[i].cca3, f);
+  });
+
+  const savedMode = loadMode();
+  if (savedMode === "learn" || savedMode === "test") {
+    mode = savedMode;
+    updateHardModeUI();
+    startGame();
+  } else {
+    openModeOverlay();
+  }
 })();
 </script>
 </body>
