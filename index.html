@@ -27,18 +27,11 @@
     min-height: 100vh;
   }
   header {
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 14px 24px; border-bottom: 1px solid #2a354d;
   }
   header h1 { font-size: 20px; letter-spacing: 0.5px; }
   header h1 span { color: var(--accent); }
-  .mode-toggle { display: flex; background: var(--panel2); border-radius: 999px; padding: 3px; gap: 2px; }
-  .mode-toggle-btn {
-    padding: 7px 16px; font-size: 13px; font-weight: 700; border-radius: 999px;
-    background: transparent; color: var(--muted); border: none; cursor: pointer;
-  }
-  .mode-toggle-btn:hover:not(.active) { color: var(--text); }
-  .mode-toggle-btn.active { background: var(--accent); color: #1a1200; }
   .stats { display: flex; gap: 24px; }
   .stat { text-align: right; }
   .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
@@ -227,20 +220,31 @@
   .mode-card.selected { border-color: var(--accent); background: rgba(255, 176, 32, 0.08); }
   .mode-card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
   .mode-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
-  .mode-switch-note { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
   .mode-start { width: 100%; }
   .mode-start:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mode-switch-bar { margin-top: 16px; padding-top: 14px; border-top: 1px solid #2a354d; }
+  .mode-seg { display: flex; border-radius: 10px; overflow: hidden; border: 1px solid #3a4a6b; }
+  .mode-seg-btn {
+    flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: none;
+    background: var(--panel2); color: var(--muted); cursor: pointer; font-family: inherit;
+  }
+  .mode-seg-btn + .mode-seg-btn { border-left: 1px solid #3a4a6b; }
+  .mode-seg-btn:hover:not(.active) { color: var(--text); }
+  .mode-seg-btn.active { background: var(--accent); color: #1a1200; }
+  .mode-confirm { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
+  .mode-confirm-link {
+    background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+    color: var(--accent); text-decoration: underline; font-weight: 700;
+  }
+  .mode-confirm-link.cancel { color: var(--muted); font-weight: 400; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Map<span>Quiz</span>.world</h1>
-  <div class="mode-toggle" id="modeToggle" role="group" aria-label="Game mode">
-    <button type="button" class="mode-toggle-btn" data-mode="learn">Learn</button>
-    <button type="button" class="mode-toggle-btn" data-mode="test">Test</button>
-  </div>
   <div class="stats">
+    <div class="stat"><div class="label">Mode</div><div class="value" id="modeLabel" style="font-size:15px">–</div></div>
     <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
     <div class="stat"><div class="label">Correct</div><div class="value" id="correct">0</div></div>
     <div class="stat"><div class="label">Missed</div><div class="value" id="missed" style="color:var(--bad)">0</div></div>
@@ -271,6 +275,18 @@
       </div>
       <div class="feedback" id="feedback"></div>
       <div class="wrong-list" id="wrongList"></div>
+      <div class="mode-switch-bar">
+        <div class="mode-seg" id="modeSeg" role="group" aria-label="Game mode">
+          <button type="button" class="mode-seg-btn" data-mode="learn">Learn the map</button>
+          <button type="button" class="mode-seg-btn" data-mode="test">Test yourself</button>
+        </div>
+        <div class="mode-confirm" id="modeConfirm" style="display:none">
+          Switching resets your score but keeps your map —
+          <button type="button" class="mode-confirm-link" id="modeConfirmSwitch">switch now</button>
+          &middot;
+          <button type="button" class="mode-confirm-link cancel" id="modeConfirmCancel">cancel</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="sidebar" id="sidebar"></div>
@@ -332,8 +348,6 @@
           165 countries.</div>
       </button>
     </div>
-    <p class="mode-switch-note" id="modeSwitchNote" style="display:none">Switching resets your score but
-      keeps your map.</p>
     <button type="button" class="mode-start" id="modeStartBtn" disabled>Start</button>
   </div>
 </div>
@@ -1226,7 +1240,8 @@ const MODE_KEY = "mapquiz-mode";
   }
 
   function updateModeLabel() {
-    document.querySelectorAll(".mode-toggle-btn").forEach(btn => {
+    el("modeLabel").textContent = mode === "learn" ? "Learn" : "Test";
+    document.querySelectorAll(".mode-seg-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.mode === mode);
     });
   }
@@ -1338,6 +1353,7 @@ const MODE_KEY = "mapquiz-mode";
   }
 
   function nextCountry() {
+    hideModeConfirm(); // a fresh round implicitly cancels a pending mode-switch confirm
     if (remaining.length === 0) remaining = d3.shuffle(deckPool.slice());
     current = remaining.pop();
     currentInfo = factsById.get(String(current.id).padStart(3, "0"));
@@ -1622,22 +1638,18 @@ const MODE_KEY = "mapquiz-mode";
     });
   });
 
-  // ---------- Mode overlay (welcome screen, mode picker, and mode switch —
-  // one overlay serves all three, per spec) ----------
+  // ---------- Mode overlay — first-visit welcome + mode picker ONLY. Mid-game
+  // switching lives in the segmented control at the bottom of the controls
+  // card (below), not here. ----------
   const modeOverlay = document.getElementById("modeOverlay");
   const modeStartBtn = document.getElementById("modeStartBtn");
-  const modeSwitchNote = document.getElementById("modeSwitchNote");
   const modeCards = Array.from(document.querySelectorAll(".mode-card"));
   let selectedMode = null;
-  let isSwitchingMode = false;
 
-  function openModeOverlay(preselect, switching) {
-    isSwitchingMode = switching;
-    selectedMode = preselect || null;
-    modeCards.forEach(c => c.classList.toggle("selected", c.dataset.mode === selectedMode));
-    modeStartBtn.disabled = !selectedMode;
-    modeStartBtn.textContent = switching ? "Switch" : "Start";
-    modeSwitchNote.style.display = switching ? "" : "none";
+  function openModeOverlay() {
+    selectedMode = null;
+    modeCards.forEach(c => c.classList.remove("selected"));
+    modeStartBtn.disabled = true;
     modeOverlay.classList.add("open");
   }
   function closeModeOverlay() {
@@ -1650,10 +1662,6 @@ const MODE_KEY = "mapquiz-mode";
     modeStartBtn.disabled = false;
   }));
 
-  modeOverlay.addEventListener("click", e => {
-    if (e.target === modeOverlay && isSwitchingMode) closeModeOverlay();
-  });
-
   function startGame() {
     computeDeckPool();
     remaining = d3.shuffle(deckPool.slice());
@@ -1661,6 +1669,16 @@ const MODE_KEY = "mapquiz-mode";
     nextCountry();
   }
 
+  modeStartBtn.addEventListener("click", () => {
+    if (!selectedMode) return;
+    mode = selectedMode;
+    saveMode(mode);
+    updateModeLabel();
+    closeModeOverlay();
+    startGame();
+  });
+
+  // ---------- Mid-game mode switch: segmented control + inline confirm ----------
   function applyModeSwitch() {
     computeDeckPool();
     remaining = d3.shuffle(deckPool.filter(f => f !== current).slice());
@@ -1669,24 +1687,33 @@ const MODE_KEY = "mapquiz-mode";
     nextCountry();
   }
 
-  modeStartBtn.addEventListener("click", () => {
-    if (!selectedMode) return;
-    const changed = selectedMode !== mode;
-    const wasSwitching = isSwitchingMode;
-    mode = selectedMode;
-    saveMode(mode);
-    updateModeLabel();
-    closeModeOverlay();
-    if (!wasSwitching) startGame();
-    else if (changed) applyModeSwitch();
-  });
+  const modeSegBtns = Array.from(document.querySelectorAll(".mode-seg-btn"));
+  const modeConfirm = document.getElementById("modeConfirm");
+  const modeConfirmSwitch = document.getElementById("modeConfirmSwitch");
+  const modeConfirmCancel = document.getElementById("modeConfirmCancel");
+  let pendingSwitchMode = null;
 
-  document.querySelectorAll(".mode-toggle-btn").forEach(btn => {
+  function hideModeConfirm() {
+    modeConfirm.style.display = "none";
+    pendingSwitchMode = null;
+  }
+
+  modeSegBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      if (!mode) return; // game hasn't started yet — the welcome overlay is already open
-      openModeOverlay(btn.dataset.mode, true);
+      if (btn.dataset.mode === mode) return; // already-active segment — no-op
+      pendingSwitchMode = btn.dataset.mode;
+      modeConfirm.style.display = "";
     });
   });
+  modeConfirmSwitch.addEventListener("click", () => {
+    if (!pendingSwitchMode) return;
+    mode = pendingSwitchMode;
+    saveMode(mode);
+    updateModeLabel();
+    hideModeConfirm();
+    applyModeSwitch();
+  });
+  modeConfirmCancel.addEventListener("click", hideModeConfirm);
 
   poolInfos = pool.map(f => factsById.get(String(f.id).padStart(3, "0")));
   pool.forEach((f, i) => {
@@ -1700,7 +1727,7 @@ const MODE_KEY = "mapquiz-mode";
     updateModeLabel();
     startGame();
   } else {
-    openModeOverlay(null, false);
+    openModeOverlay();
   }
 })();
 </script>

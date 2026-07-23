@@ -50,6 +50,9 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-19 — Adopted branch → deploy preview → play-test → merge workflow (see Build Workflow above); direct commits to main retired
 - 2026-07-22 — Phase 1 hint overhaul built on `hint-overhaul` branch, PR opened for deploy-preview play-test
 - 2026-07-22 — Phase 1 hint overhaul play-tested on deploy preview (confirmed good) and merged to main; branch deleted
+- 2026-07-23 — Phase 2 (Learn mode) built on `learn-mode` branch, PR opened for deploy-preview play-test
+- 2026-07-23 — Play-test feedback on the deploy preview: unclear wrong-answer copy and a too-subtle header mode toggle — both fixed
+- 2026-07-23 — Further play-test feedback: header toggle still unclear — reworked into a segmented control + inline confirm at the bottom of the controls card, welcome overlay back to first-visit-only duty
 
 ## Current State
 
@@ -98,6 +101,12 @@ Never commit directly to main except for trivial brief-only edits.
   - **Distractors:** `pickDistractors()` — past 10 Learn-mode corrects, same-subregion candidates first; otherwise (or to fill remaining slots) "famous" = `STARTER_DECK` members from a different region than the target, then a random fallback.
   - **Stats:** Mode stat tile added to the header (leftmost, before Score).
   - **Not live-tested:** the tap→graduation→mastery transition specifically — it needs 2 non-consecutive tap-wins on the *same* country, which under natural shuffling can take up to ~54 rounds to line up, so it wasn't practical to exercise end-to-end in this session. Everything else (mode picker, both round types individually, mode switching mid-game with map-tint/counter persistence, localStorage persistence across reload, deck-growth data, no console errors) was play-tested locally. Recommend Josh either spot-checks graduation on the deploy preview (get 2 correct taps on the same country — it'll resurface once the deck reshuffles) or asks for a longer automated soak test before merge.
+- [x] **Mode-switch rework** (built 2026-07-23, spec agreed 2026-07-23, from `learn-mode` branch play-testing — the header "Learn | Test" pill added mid-branch doesn't communicate what it does):
+  1. Header toggle pill removed; the Mode stat tile is back (leftmost, before Score) as a passive label, updated by `updateModeLabel()`.
+  2. New `.mode-switch-bar` at the bottom of the controls card (`#modeSeg`, two `.mode-seg-btn`s: "Learn the map" / "Test yourself"), separated by a hairline top border, full width, active segment filled amber.
+  3. Tapping the inactive segment reveals `#modeConfirm` ("Switching resets your score but keeps your map — **switch now** · cancel") instead of switching immediately; "switch now" calls `applyModeSwitch()` (unchanged), "cancel" dismisses via `hideModeConfirm()`. Tapping the already-active segment no-ops. `nextCountry()` also calls `hideModeConfirm()`, so starting a new round implicitly cancels a dangling confirm rather than leaving it stranded.
+  4. `openModeOverlay()` simplified back to first-visit-only (no `isSwitching`/preselect args, no switch-note, always labeled "Start"); backdrop-click-to-dismiss removed since the overlay is mandatory again on first visit. `applyModeSwitch()` itself is unchanged from Phase 2.
+  - Play-tested locally: segment click → confirm → switch now (mode/score/round update, new round starts, confirm auto-hides) and segment click → cancel (no-op, confirm hides) both work; no console errors.
 - [x] **Increase border contrast** (done 2026-07-15: stroke #4a5878 at 0.5 — lighter grey-blue, target country untouched)
 - [x] **Feedback form via Netlify Forms** (built 2026-07-18, per spec agreed 2026-07-15) — form markup is static in index.html (Netlify's build-time HTML parser needs to see it, so it's CSS-hidden, not JS-injected); overlay opens from a "Feedback" link in the footer, submits via fetch, shows a thank-you state without navigating away. Fixed a bug found while implementing: the existing global Enter-key "advance to next round" listener didn't check whether the feedback overlay was open, so pressing Enter while typing feedback (after a round had ended) could have advanced the game underneath the modal — now gated on the overlay's open state.
   - Netlify dashboard config done 2026-07-18: form detection enabled (was off — account-level default; required a redeploy for the form to register), "feedback" form active, email notification → joshseiden@gmail.com (subject "MapQuiz.world feedback"). End-to-end test confirmed: form → dashboard → inbox.
