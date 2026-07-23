@@ -49,10 +49,11 @@ Single-page app: `index.html` contains all game code and embedded data (country 
 - 2026-07-19 — "Known for" hint data drafted, reviewed (165 A/B/C choices by Josh), fact-checked, and finalized in known-for.json
 - 2026-07-19 — Adopted branch → deploy preview → play-test → merge workflow (see Build Workflow above); direct commits to main retired
 - 2026-07-22 — Phase 1 hint overhaul built on `hint-overhaul` branch, PR opened for deploy-preview play-test
+- 2026-07-22 — Phase 1 hint overhaul play-tested on deploy preview (confirmed good) and merged to main; branch deleted
 
 ## Current State
 
-Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to Netlify (continuous deploy from main, verified 2026-07-14). Domain mapquiz.world added as primary (www redirects); Netlify DNS zone created; DreamHost nameservers switched to dns1–dns4.p06.nsone.net on 2026-07-14 and now resolving, with SSL certificate provisioned — mapquiz.world is live over HTTPS. In-game title/header renamed from GeoGuess to MapQuiz.world to match.
+Live and feature-complete. Repo: github.com/joshseiden/mapquiz-world, linked to Netlify (continuous deploy from main, verified 2026-07-14). Domain mapquiz.world added as primary (www redirects); Netlify DNS zone created; DreamHost nameservers switched to dns1–dns4.p06.nsone.net on 2026-07-14 and now resolving, with SSL certificate provisioned — mapquiz.world is live over HTTPS. In-game title/header renamed from GeoGuess to MapQuiz.world to match. Phase 1 hint overhaul (known-for/capital/borders hint ladder) merged to main 2026-07-22 — Phase 2 (Learn mode) is next up.
 
 ## Build Workflow (standing process, adopted 2026-07-19)
 
@@ -85,7 +86,7 @@ Never commit directly to main except for trivial brief-only edits.
   1. Curated "known for" data embedded as `KNOWN_FOR` in index.html (next to `TRIVIA`); the standalone `known-for.json` was deleted — index.html is now the source of record. `known-for-factcheck-revised.md` kept in the repo as the review record.
   2. `bordersText()` maps each country's `borders` (ISO alpha-3 codes) to display names via a new `factsByCca3` lookup built alongside the existing `factsById`. Island nations (empty `borders` array) fall back to `"Island nation in " + subregion/region`.
   3. `buildRows()` hint ladder reordered: stage 1 = "Known for", stage 2 = "Capital" + "Borders" (two rows, revealed together on the 2nd wrong guess). Agricultural products, major industries, and population demoted to stage 3 (reveal-time only) — data untouched, just no longer used as hints.
-  - Not yet play-tested in a browser — recommend a play-test pass on the deploy preview before merge.
+  - Play-tested on the deploy preview 2026-07-22 — confirmed working; merged to main.
 - [ ] **Phase 2 — Learn mode** (spec agreed 2026-07-18; requires Phase 1). On-ramp for players who struggle even on well-known countries — switches the game from recall to recognition, which is where shape→name associations get built.
   - **Mode picker on load:** two buttons — **"Learn the map"** and **"Test yourself"** (current game, unchanged). Deliberately not named "easy/hard". A small mode-switch link in the footer restarts in the other mode.
   - **Round format:** the "known for" hint displays up front as the question line; map highlights the country as usual; the text input row is replaced by **4 tappable answer buttons** (2×2 grid on phones, thumb-sized). One tap resolves the round: correct → +5 points and celebration; wrong → tapped button marked red, correct button green, then normal reveal.
