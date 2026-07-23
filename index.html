@@ -27,11 +27,18 @@
     min-height: 100vh;
   }
   header {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
     padding: 14px 24px; border-bottom: 1px solid #2a354d;
   }
   header h1 { font-size: 20px; letter-spacing: 0.5px; }
   header h1 span { color: var(--accent); }
+  .mode-toggle { display: flex; background: var(--panel2); border-radius: 999px; padding: 3px; gap: 2px; }
+  .mode-toggle-btn {
+    padding: 7px 16px; font-size: 13px; font-weight: 700; border-radius: 999px;
+    background: transparent; color: var(--muted); border: none; cursor: pointer;
+  }
+  .mode-toggle-btn:hover:not(.active) { color: var(--text); }
+  .mode-toggle-btn.active { background: var(--accent); color: #1a1200; }
   .stats { display: flex; gap: 24px; }
   .stat { text-align: right; }
   .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
@@ -229,8 +236,11 @@
 
 <header>
   <h1>Map<span>Quiz</span>.world</h1>
+  <div class="mode-toggle" id="modeToggle" role="group" aria-label="Game mode">
+    <button type="button" class="mode-toggle-btn" data-mode="learn">Learn</button>
+    <button type="button" class="mode-toggle-btn" data-mode="test">Test</button>
+  </div>
   <div class="stats">
-    <div class="stat"><div class="label">Mode</div><div class="value" id="modeLabel" style="font-size:15px">–</div></div>
     <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
     <div class="stat"><div class="label">Correct</div><div class="value" id="correct">0</div></div>
     <div class="stat"><div class="label">Missed</div><div class="value" id="missed" style="color:var(--bad)">0</div></div>
@@ -268,8 +278,7 @@
 
 <footer>
   &copy; 2026 Joshua Seiden &middot; <a href="https://joshuaseiden.com">joshuaseiden.com</a> &middot;
-  <button type="button" class="feedback-link" id="feedbackLink">Feedback</button> &middot;
-  <button type="button" class="feedback-link" id="switchModeLink">Switch mode</button><br>
+  <button type="button" class="feedback-link" id="feedbackLink">Feedback</button><br>
   Map data: <a href="https://www.naturalearthdata.com/">Natural Earth</a> via
   <a href="https://github.com/topojson/world-atlas">world-atlas</a> (public domain) &middot;
   Country data: <a href="https://github.com/mledoze/countries">mledoze/countries</a>
@@ -1217,7 +1226,9 @@ const MODE_KEY = "mapquiz-mode";
   }
 
   function updateModeLabel() {
-    el("modeLabel").textContent = mode === "learn" ? "Learn" : "Test";
+    document.querySelectorAll(".mode-toggle-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.mode === mode);
+    });
   }
 
   let wrongGuesses = [];
@@ -1281,7 +1292,7 @@ const MODE_KEY = "mapquiz-mode";
     if (revealedStage >= 3) {
       const won = result && result.won;
       html += `<div class="result-banner ${won ? "good" : "bad"}">
-        ${won ? `✓ Correct! +${result.points} points` : "✗ Out of guesses"}
+        ${won ? `✓ Correct! +${result.points} points` : roundKind === "tap" ? "✗ Incorrect guess" : "✗ Out of guesses"}
         ${roundKind === "graduation"
           ? `<div class="review-line">${won ? "Mastered! You'll see this one as a typed round from now on." : "Back to multiple choice for this one."}</div>`
           : isReviewRound ? `<div class="review-line">${won ? "Got it this time ✓" : "It'll come back again."}</div>` : ""}
@@ -1487,7 +1498,7 @@ const MODE_KEY = "mapquiz-mode";
     } else {
       missedCount++;
       feedback.textContent = roundKind === "tap"
-        ? `Not quite. The answer was ${currentInfo.name.common}.`
+        ? `Incorrect guess. The answer was ${currentInfo.name.common}.`
         : `Out of guesses. The answer was ${currentInfo.name.common}.`;
       feedback.className = "feedback bad";
     }
@@ -1670,7 +1681,12 @@ const MODE_KEY = "mapquiz-mode";
     else if (changed) applyModeSwitch();
   });
 
-  document.getElementById("switchModeLink").addEventListener("click", () => openModeOverlay(mode, true));
+  document.querySelectorAll(".mode-toggle-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (!mode) return; // game hasn't started yet — the welcome overlay is already open
+      openModeOverlay(btn.dataset.mode, true);
+    });
+  });
 
   poolInfos = pool.map(f => factsById.get(String(f.id).padStart(3, "0")));
   pool.forEach((f, i) => {
