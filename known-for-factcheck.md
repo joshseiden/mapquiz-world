@@ -1,0 +1,169 @@
+# Known-for fact-check list
+
+Check the box once verified. Source: chosen 2026-07-19 from Claude-drafted options — all claims need verification before wide sharing.
+
+- [ ] **Afghanistan** (AFG) — Home of the Hindu Kush mountains
+- [ ] **Angola** (AGO) — Portuguese-speaking giant of southern Africa
+- [ ] **Albania** (ALB) — Known for its 170,000 concrete bunkers
+- [ ] **United Arab Emirates** (ARE) — Home of the Burj Khalifa, the world's tallest building
+- [ ] **Argentina** (ARG) — Homeland of tango and Lionel Messi
+- [ ] **Armenia** (ARM) — Famous view of Mount Ararat
+- [ ] **Australia** (AUS) — Home of the Great Barrier Reef
+- [ ] **Austria** (AUT) — Birthplace of Mozart
+- [ ] **Azerbaijan** (AZE) — The Land of Fire — natural gas flames burn on its hillsides
+- [ ] **Burundi** (BDI) — Small country on the shores of Lake Tanganyika
+- [ ] **Belgium** (BEL) — Famous for waffles, chocolate, and fries
+- [ ] **Benin** (BEN) — Birthplace of the Vodun (voodoo) religion
+- [ ] **Burkina Faso** (BFA) — Its name means 'Land of Honest People'
+- [ ] **Bangladesh** (BGD) — Land of the Bengal tiger and giant river deltas
+- [ ] **Bulgaria** (BGR) — Black Sea beaches and mountain monasteries
+- [ ] **Bahamas** (BHS) — Caribbean nation of 700 islands
+- [ ] **Bosnia and Herzegovina** (BIH) — Hosted the 1984 Winter Olympics in Sarajevo
+- [ ] **Belarus** (BLR) — Land of ancient forests and European bison
+- [ ] **Belize** (BLZ) — Central America's only English-speaking country
+- [ ] **Bolivia** (BOL) — Home of the world's largest salt flat
+- [ ] **Brazil** (BRA) — Soccer, samba, and the Amazon rainforest
+- [ ] **Brunei** (BRN) — Tiny oil-rich sultanate on the island of Borneo
+- [ ] **Bhutan** (BTN) — Measures success in Gross National Happiness
+- [ ] **Botswana** (BWA) — One of the world's top diamond producers
+- [ ] **Central African Republic** (CAF) — Rainforest home of forest elephants and gorillas
+- [ ] **Canada** (CAN) — Home of maple syrup and Niagara Falls
+- [ ] **Switzerland** (CHE) — Famously neutral home of the Red Cross
+- [ ] **Chile** (CHL) — Home of the Atacama, the driest desert on Earth
+- [ ] **China** (CHN) — Home of pandas and the Forbidden City
+- [ ] **Ivory Coast** (CIV) — The world's biggest cocoa grower
+- [ ] **Cameroon** (CMR) — Home of the Indomitable Lions soccer team
+- [ ] **DR Congo** (COD) — Home of the Congo River and mountain gorillas
+- [ ] **Republic of the Congo** (COG) — Rainforest country north of the Congo River
+- [ ] **Colombia** (COL) — Homeland of Shakira and García Márquez
+- [ ] **Costa Rica** (CRI) — Rainforest paradise with no army
+- [ ] **Cuba** (CUB) — Home of salsa music and old Havana
+- [ ] **Cyprus** (CYP) — Mediterranean island split between two peoples
+- [ ] **Czechia** (CZE) — The world's biggest beer drinkers per person
+- [ ] **Germany** (DEU) — Home of the Autobahn and Oktoberfest
+- [ ] **Djibouti** (DJI) — Tiny desert country guarding the Red Sea's gateway
+- [ ] **Denmark** (DNK) — Home of LEGO and the Little Mermaid statue
+- [ ] **Dominican Republic** (DOM) — Baseball-crazy half of the island of Hispaniola
+- [ ] **Algeria** (DZA) — Africa's largest country, mostly Sahara
+- [ ] **Ecuador** (ECU) — Named for the equator, which runs through it
+- [ ] **Egypt** (EGY) — Home of the pyramids and the Nile
+- [ ] **Eritrea** (ERI) — Red Sea coast with Italian-era architecture
+- [ ] **Spain** (ESP) — Home of flamenco and paella
+- [ ] **Estonia** (EST) — Medieval Tallinn and Baltic forests
+- [ ] **Ethiopia** (ETH) — The birthplace of coffee
+- [ ] **Finland** (FIN) — Land of saunas and the midnight sun
+- [ ] **Fiji** (FJI) — South Pacific islands famous for rugby and reefs
+- [ ] **France** (FRA) — Land of croissants, cheese, and the Louvre
+- [ ] **Gabon** (GAB) — Rainforest country where gorillas roam beaches
+- [ ] **United Kingdom** (GBR) — Home of Big Ben and the Royal Family
+- [ ] **Georgia** (GEO) — The birthplace of wine, 8,000 years ago
+- [ ] **Ghana** (GHA) — First African colony to win its independence
+- [ ] **Guinea** (GIN) — World's top source of bauxite, the aluminum ore
+- [ ] **Gambia** (GMB) — Africa's smallest mainland country
+- [ ] **Guinea-Bissau** (GNB) — One of the world's top cashew growers
+- [ ] **Equatorial Guinea** (GNQ) — Africa's only Spanish-speaking country
+- [ ] **Greece** (GRC) — Home of the Acropolis and the first Olympics
+- [ ] **Guatemala** (GTM) — Home of the great Mayan city of Tikal
+- [ ] **Guyana** (GUY) — South America's only English-speaking country
+- [ ] **Honduras** (HND) — Home of the Mayan ruins of Copán
+- [ ] **Croatia** (HRV) — Where Dubrovnik's walls played King's Landing
+- [ ] **Haiti** (HTI) — First nation born from a successful slave revolt
+- [ ] **Hungary** (HUN) — Birthplace of the Rubik's Cube
+- [ ] **Indonesia** (IDN) — World's largest island country — 17,000 islands
+- [ ] **India** (IND) — Home of the Taj Mahal
+- [ ] **Ireland** (IRL) — Land of shamrocks, castles, and Guinness
+- [ ] **Iran** (IRN) — Ancient Persia, land of poets and carpets
+- [ ] **Iraq** (IRQ) — Ancient Mesopotamia, cradle of civilization
+- [ ] **Iceland** (ISL) — Land of fire and ice — volcanoes and glaciers
+- [ ] **Israel** (ISR) — Home of Jerusalem's Old City
+- [ ] **Italy** (ITA) — Home of the Colosseum and pizza
+- [ ] **Jamaica** (JAM) — Birthplace of reggae and Bob Marley
+- [ ] **Jordan** (JOR) — Home of Petra, the rose-red city carved in stone
+- [ ] **Japan** (JPN) — Home of anime and bullet trains
+- [ ] **Kazakhstan** (KAZ) — The world's largest landlocked country
+- [ ] **Kenya** (KEN) — Land of champion marathon runners
+- [ ] **Kyrgyzstan** (KGZ) — Mountain nomad land of yurts and eagle hunters
+- [ ] **Cambodia** (KHM) — Home of Angkor Wat, the world's largest temple
+- [ ] **South Korea** (KOR) — Land of kimchi and Samsung
+- [ ] **Kuwait** (KWT) — Small oil-rich state at the tip of the Gulf
+- [ ] **Laos** (LAO) — The Land of a Million Elephants
+- [ ] **Lebanon** (LBN) — Land of the cedars — one is on its flag
+- [ ] **Liberia** (LBR) — Africa's oldest republic, founded by freed slaves
+- [ ] **Libya** (LBY) — Sahara land with Roman ruins on its coast
+- [ ] **Sri Lanka** (LKA) — Teardrop-shaped island famous for tea
+- [ ] **Lesotho** (LSO) — The Kingdom in the Sky — all above 1,400 meters
+- [ ] **Lithuania** (LTU) — Basketball-mad Baltic nation
+- [ ] **Luxembourg** (LUX) — Tiny country, among the world's richest per person
+- [ ] **Latvia** (LVA) — Home of Riga's art nouveau old town
+- [ ] **Morocco** (MAR) — Home of Casablanca and mint tea
+- [ ] **Moldova** (MDA) — Home of the world's largest wine cellars
+- [ ] **Madagascar** (MDG) — Island of lemurs found nowhere else on Earth
+- [ ] **Mexico** (MEX) — Home of tacos and ancient pyramids
+- [ ] **North Macedonia** (MKD) — Birthplace of Mother Teresa
+- [ ] **Mali** (MLI) — Home of legendary Timbuktu
+- [ ] **Myanmar** (MMR) — Land of golden pagodas
+- [ ] **Montenegro** (MNE) — Its name means 'Black Mountain'
+- [ ] **Mongolia** (MNG) — Homeland of Genghis Khan
+- [ ] **Mozambique** (MOZ) — Indian Ocean coast with 2,500 km of beaches
+- [ ] **Mauritania** (MRT) — Sahara home of the 'Eye of Africa' rock formation
+- [ ] **Malawi** (MWI) — Home of Lake Malawi and its rainbow of fish
+- [ ] **Malaysia** (MYS) — Home of the Petronas Twin Towers
+- [ ] **Namibia** (NAM) — Land of towering red sand dunes
+- [ ] **Niger** (NER) — Sahara country named for the Niger River
+- [ ] **Nigeria** (NGA) — Home of Nollywood and Afrobeats
+- [ ] **Nicaragua** (NIC) — Its great lake once held freshwater sharks
+- [ ] **Netherlands** (NLD) — Land of windmills, tulips, and bicycles
+- [ ] **Norway** (NOR) — Land of fjords and the midnight sun
+- [ ] **Nepal** (NPL) — Birthplace of the Buddha
+- [ ] **New Zealand** (NZL) — Land of kiwis and the All Blacks
+- [ ] **Oman** (OMN) — Sultanate on the Arabian Sea
+- [ ] **Pakistan** (PAK) — Cricket-mad land of the Indus River
+- [ ] **Panama** (PAN) — Home of the canal that links two oceans
+- [ ] **Peru** (PER) — Home of Machu Picchu
+- [ ] **Philippines** (PHL) — An archipelago of more than 7,000 islands
+- [ ] **Papua New Guinea** (PNG) — Rainforest home of birds-of-paradise
+- [ ] **Poland** (POL) — Homeland of Chopin and Copernicus
+- [ ] **North Korea** (PRK) — The world's most isolated country
+- [ ] **Portugal** (PRT) — Home of port wine and azulejo tiles
+- [ ] **Paraguay** (PRY) — Its flag has a different emblem on each side
+- [ ] **Qatar** (QAT) — Gas-rich home of Al Jazeera
+- [ ] **Romania** (ROU) — Home of Transylvania and Dracula's castle
+- [ ] **Russia** (RUS) — The world's largest country
+- [ ] **Rwanda** (RWA) — One of Africa's cleanest, greenest countries
+- [ ] **Saudi Arabia** (SAU) — Home of Mecca and Medina
+- [ ] **Sudan** (SDN) — Has more pyramids than Egypt
+- [ ] **Senegal** (SEN) — Home of Dakar and its famous music scene
+- [ ] **Solomon Islands** (SLB) — Pacific islands famous for WWII's Guadalcanal
+- [ ] **Sierra Leone** (SLE) — Its name means 'Lion Mountains'
+- [ ] **El Salvador** (SLV) — First country to make Bitcoin legal money
+- [ ] **Somalia** (SOM) — Forms the tip of the Horn of Africa
+- [ ] **Serbia** (SRB) — Homeland of tennis star Novak Djokovic
+- [ ] **South Sudan** (SSD) — The world's youngest country, born in 2011
+- [ ] **Suriname** (SUR) — Dutch-speaking rainforest nation
+- [ ] **Slovakia** (SVK) — Split peacefully from Czechia in the Velvet Divorce
+- [ ] **Slovenia** (SVN) — Home of fairy-tale Lake Bled
+- [ ] **Sweden** (SWE) — Land of ABBA and the northern lights
+- [ ] **Eswatini** (SWZ) — Changed its name from Swaziland in 2018
+- [ ] **Syria** (SYR) — Home of Damascus, the oldest capital on Earth
+- [ ] **Chad** (TCD) — Home of Emi Koussi, the Sahara's highest peak
+- [ ] **Togo** (TGO) — A thin strip of West Africa on the Gulf of Guinea
+- [ ] **Thailand** (THA) — The Land of Smiles — temples and beaches
+- [ ] **Tajikistan** (TJK) — The Persian-speaking corner of Central Asia
+- [ ] **Turkmenistan** (TKM) — Famous for its golden Akhal-Teke horses
+- [ ] **Timor-Leste** (TLS) — Asia's youngest country
+- [ ] **Trinidad and Tobago** (TTO) — Home of Carnival and calypso
+- [ ] **Tunisia** (TUN) — Home of ancient Carthage
+- [ ] **Türkiye** (TUR) — Where Istanbul bridges Europe and Asia
+- [ ] **Tanzania** (TZA) — Land of Zanzibar's spice islands
+- [ ] **Uganda** (UGA) — Where the Nile begins at Lake Victoria
+- [ ] **Ukraine** (UKR) — Europe's breadbasket of golden wheat fields
+- [ ] **Uruguay** (URY) — Beach-loving land of mate tea
+- [ ] **United States** (USA) — Land of Hollywood and the Super Bowl
+- [ ] **Uzbekistan** (UZB) — Silk Road cities of Samarkand and Bukhara
+- [ ] **Venezuela** (VEN) — Home of Angel Falls, the world's tallest waterfall
+- [ ] **Vietnam** (VNM) — Home of pho and Ha Long Bay
+- [ ] **Vanuatu** (VUT) — Pacific islands where bungee jumping was born
+- [ ] **Yemen** (YEM) — Land of ancient mud-brick skyscrapers
+- [ ] **South Africa** (ZAF) — The Rainbow Nation of Nelson Mandela
+- [ ] **Zambia** (ZMB) — Home of Victoria Falls, 'the smoke that thunders'
+- [ ] **Zimbabwe** (ZWE) — Home of Hwange's great elephant herds
