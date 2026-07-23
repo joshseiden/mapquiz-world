@@ -207,36 +207,34 @@
   .feedback-disclosure { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
   .feedback-thanks { text-align: center; }
   .feedback-thanks p { font-size: 17px; margin-bottom: 16px; }
-  .mode-panel { max-width: 480px; }
+  .mode-panel { max-width: 380px; }
   .mode-panel h2 { font-size: 20px; margin-bottom: 8px; }
   .mode-intro { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
-  .mode-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-  @media (min-width: 480px) { .mode-cards { flex-direction: row; } }
-  .mode-card {
-    flex: 1; text-align: left; background: var(--panel2); border: 2px solid #3a4a6b; border-radius: 10px;
-    padding: 14px; cursor: pointer; color: var(--text); font-family: inherit;
-  }
-  .mode-card:hover { border-color: var(--accent); }
-  .mode-card.selected { border-color: var(--accent); background: rgba(255, 176, 32, 0.08); }
-  .mode-card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-  .mode-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .mode-start { width: 100%; }
-  .mode-start:disabled { opacity: 0.5; cursor: not-allowed; }
-  .mode-switch-bar { margin-top: 16px; padding-top: 14px; border-top: 1px solid #2a354d; }
-  .mode-seg { display: flex; border-radius: 10px; overflow: hidden; border: 1px solid #3a4a6b; }
-  .mode-seg-btn {
-    flex: 1; padding: 12px; font-size: 14px; font-weight: 700; border: none;
-    background: var(--panel2); color: var(--muted); cursor: pointer; font-family: inherit;
+  .hard-mode-stat { position: relative; text-align: left; }
+  .hard-mode-control { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .hard-mode-switch {
+    position: relative; width: 40px; height: 22px; border-radius: 999px; padding: 0;
+    background: #3a4a6b; border: none; cursor: pointer; flex-shrink: 0;
   }
-  .mode-seg-btn + .mode-seg-btn { border-left: 1px solid #3a4a6b; }
-  .mode-seg-btn:hover:not(.active) { color: var(--text); }
-  .mode-seg-btn.active { background: var(--accent); color: #1a1200; }
-  .mode-confirm { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
-  .mode-confirm-link {
+  .hard-mode-switch.on { background: var(--accent); }
+  .hard-mode-knob {
+    position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+    background: #8fa0b8; transition: left 0.15s ease, background 0.15s ease;
+  }
+  .hard-mode-switch.on .hard-mode-knob { left: 20px; background: #1a1200; }
+  .hard-mode-state { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .hard-mode-state.on { color: var(--accent); }
+  .hard-mode-popover {
+    position: absolute; top: 100%; left: 0; margin-top: 8px; width: 220px; z-index: 10;
+    background: var(--panel2); border: 1px solid #3a4a6b; border-radius: 8px; padding: 10px 12px;
+    font-size: 12px; color: var(--muted); line-height: 1.5; text-align: left;
+  }
+  .popover-link {
     background: none; border: none; padding: 0; font: inherit; cursor: pointer;
     color: var(--accent); text-decoration: underline; font-weight: 700;
   }
-  .mode-confirm-link.cancel { color: var(--muted); font-weight: 400; }
+  .popover-link.cancel { color: var(--muted); font-weight: 400; }
 </style>
 </head>
 <body>
@@ -244,7 +242,21 @@
 <header>
   <h1>Map<span>Quiz</span>.world</h1>
   <div class="stats">
-    <div class="stat"><div class="label">Mode</div><div class="value" id="modeLabel" style="font-size:15px">–</div></div>
+    <div class="stat hard-mode-stat">
+      <div class="label">Hard mode</div>
+      <div class="hard-mode-control">
+        <button type="button" class="hard-mode-switch" id="hardModeSwitch" role="switch" aria-checked="false" aria-label="Hard mode">
+          <span class="hard-mode-knob"></span>
+        </button>
+        <span class="hard-mode-state" id="hardModeState">OFF</span>
+      </div>
+      <div class="hard-mode-popover" id="hardModePopover" style="display:none">
+        Resets your score, keeps your map —
+        <button type="button" class="popover-link" id="hardModeFlip">flip it</button>
+        &middot;
+        <button type="button" class="popover-link cancel" id="hardModeCancel">cancel</button>
+      </div>
+    </div>
     <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
     <div class="stat"><div class="label">Correct</div><div class="value" id="correct">0</div></div>
     <div class="stat"><div class="label">Missed</div><div class="value" id="missed" style="color:var(--bad)">0</div></div>
@@ -275,18 +287,6 @@
       </div>
       <div class="feedback" id="feedback"></div>
       <div class="wrong-list" id="wrongList"></div>
-      <div class="mode-switch-bar">
-        <div class="mode-seg" id="modeSeg" role="group" aria-label="Game mode">
-          <button type="button" class="mode-seg-btn" data-mode="learn">Learn the map</button>
-          <button type="button" class="mode-seg-btn" data-mode="test">Test yourself</button>
-        </div>
-        <div class="mode-confirm" id="modeConfirm" style="display:none">
-          Switching resets your score but keeps your map —
-          <button type="button" class="mode-confirm-link" id="modeConfirmSwitch">switch now</button>
-          &middot;
-          <button type="button" class="mode-confirm-link cancel" id="modeConfirmCancel">cancel</button>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sidebar" id="sidebar"></div>
@@ -336,19 +336,10 @@
     <h2>Welcome to MapQuiz.world</h2>
     <p class="mode-intro">A mystery country lights up on the map — can you name it? Hints help when
       you're stuck, and countries you miss come back until you know them.</p>
-    <div class="mode-cards">
-      <button type="button" class="mode-card" data-mode="learn">
-        <div class="mode-card-title">Learn the map</div>
-        <div class="mode-card-desc">Tap the right answer from four choices, and graduate to typing as
-          you master each country.</div>
-      </button>
-      <button type="button" class="mode-card" data-mode="test">
-        <div class="mode-card-title">Test yourself</div>
-        <div class="mode-card-desc">Type your answers cold: three guesses, a hint after each miss, all
-          165 countries.</div>
-      </button>
-    </div>
-    <button type="button" class="mode-start" id="modeStartBtn" disabled>Start</button>
+    <p class="mode-intro">The game gets harder as you play — you'll graduate from tapping answers to
+      typing them as you master each country. Want a real challenge right away? Flip on Hard mode, up
+      by your score.</p>
+    <button type="button" class="mode-start" id="modeStartBtn">Start</button>
   </div>
 </div>
 
@@ -1239,11 +1230,14 @@ const MODE_KEY = "mapquiz-mode";
     endRound(correct);
   }
 
-  function updateModeLabel() {
-    el("modeLabel").textContent = mode === "learn" ? "Learn" : "Test";
-    document.querySelectorAll(".mode-seg-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.mode === mode);
-    });
+  // Hard mode is UI vocabulary only — internally still the "learn"/"test" mode
+  // built for Phase 2. ON = Test yourself (typed, harder); OFF = Learn.
+  function updateHardModeUI() {
+    const hardOn = mode === "test";
+    el("hardModeSwitch").classList.toggle("on", hardOn);
+    el("hardModeSwitch").setAttribute("aria-checked", String(hardOn));
+    el("hardModeState").textContent = hardOn ? "ON" : "OFF";
+    el("hardModeState").classList.toggle("on", hardOn);
   }
 
   let wrongGuesses = [];
@@ -1353,7 +1347,7 @@ const MODE_KEY = "mapquiz-mode";
   }
 
   function nextCountry() {
-    hideModeConfirm(); // a fresh round implicitly cancels a pending mode-switch confirm
+    hideHardModePopover(); // a fresh round implicitly cancels a pending hard-mode popover
     if (remaining.length === 0) remaining = d3.shuffle(deckPool.slice());
     current = remaining.pop();
     currentInfo = factsById.get(String(current.id).padStart(3, "0"));
@@ -1638,29 +1632,18 @@ const MODE_KEY = "mapquiz-mode";
     });
   });
 
-  // ---------- Mode overlay — first-visit welcome + mode picker ONLY. Mid-game
-  // switching lives in the segmented control at the bottom of the controls
-  // card (below), not here. ----------
+  // ---------- Mode overlay — first-visit welcome ONLY, single Start button.
+  // Hard mode always starts OFF; the header switch is the only in-game
+  // control for it. ----------
   const modeOverlay = document.getElementById("modeOverlay");
   const modeStartBtn = document.getElementById("modeStartBtn");
-  const modeCards = Array.from(document.querySelectorAll(".mode-card"));
-  let selectedMode = null;
 
   function openModeOverlay() {
-    selectedMode = null;
-    modeCards.forEach(c => c.classList.remove("selected"));
-    modeStartBtn.disabled = true;
     modeOverlay.classList.add("open");
   }
   function closeModeOverlay() {
     modeOverlay.classList.remove("open");
   }
-
-  modeCards.forEach(card => card.addEventListener("click", () => {
-    selectedMode = card.dataset.mode;
-    modeCards.forEach(c => c.classList.toggle("selected", c === card));
-    modeStartBtn.disabled = false;
-  }));
 
   function startGame() {
     computeDeckPool();
@@ -1670,15 +1653,14 @@ const MODE_KEY = "mapquiz-mode";
   }
 
   modeStartBtn.addEventListener("click", () => {
-    if (!selectedMode) return;
-    mode = selectedMode;
+    mode = "learn"; // first visit always starts with Hard mode OFF
     saveMode(mode);
-    updateModeLabel();
+    updateHardModeUI();
     closeModeOverlay();
     startGame();
   });
 
-  // ---------- Mid-game mode switch: segmented control + inline confirm ----------
+  // ---------- Hard mode switch (header) + confirmation popover ----------
   function applyModeSwitch() {
     computeDeckPool();
     remaining = d3.shuffle(deckPool.filter(f => f !== current).slice());
@@ -1687,33 +1669,31 @@ const MODE_KEY = "mapquiz-mode";
     nextCountry();
   }
 
-  const modeSegBtns = Array.from(document.querySelectorAll(".mode-seg-btn"));
-  const modeConfirm = document.getElementById("modeConfirm");
-  const modeConfirmSwitch = document.getElementById("modeConfirmSwitch");
-  const modeConfirmCancel = document.getElementById("modeConfirmCancel");
-  let pendingSwitchMode = null;
+  const hardModeSwitch = document.getElementById("hardModeSwitch");
+  const hardModePopover = document.getElementById("hardModePopover");
+  const hardModeFlip = document.getElementById("hardModeFlip");
+  const hardModeCancel = document.getElementById("hardModeCancel");
+  let pendingHardModeFlip = false;
 
-  function hideModeConfirm() {
-    modeConfirm.style.display = "none";
-    pendingSwitchMode = null;
+  function hideHardModePopover() {
+    hardModePopover.style.display = "none";
+    pendingHardModeFlip = false;
   }
 
-  modeSegBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      if (btn.dataset.mode === mode) return; // already-active segment — no-op
-      pendingSwitchMode = btn.dataset.mode;
-      modeConfirm.style.display = "";
-    });
+  hardModeSwitch.addEventListener("click", () => {
+    if (!mode) return; // game hasn't started yet — the welcome overlay is already open
+    pendingHardModeFlip = true;
+    hardModePopover.style.display = "";
   });
-  modeConfirmSwitch.addEventListener("click", () => {
-    if (!pendingSwitchMode) return;
-    mode = pendingSwitchMode;
+  hardModeFlip.addEventListener("click", () => {
+    if (!pendingHardModeFlip) return;
+    mode = mode === "learn" ? "test" : "learn";
     saveMode(mode);
-    updateModeLabel();
-    hideModeConfirm();
+    updateHardModeUI();
+    hideHardModePopover();
     applyModeSwitch();
   });
-  modeConfirmCancel.addEventListener("click", hideModeConfirm);
+  hardModeCancel.addEventListener("click", hideHardModePopover);
 
   poolInfos = pool.map(f => factsById.get(String(f.id).padStart(3, "0")));
   pool.forEach((f, i) => {
@@ -1724,7 +1704,7 @@ const MODE_KEY = "mapquiz-mode";
   const savedMode = loadMode();
   if (savedMode === "learn" || savedMode === "test") {
     mode = savedMode;
-    updateModeLabel();
+    updateHardModeUI();
     startGame();
   } else {
     openModeOverlay();
