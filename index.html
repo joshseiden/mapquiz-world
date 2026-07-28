@@ -51,21 +51,26 @@
      (align-items: stretch, the flexbox default — set explicitly here) so the
      sidebar and the map+controls column are always the same height, and the
      sidebar can scroll independently when its reveal content runs long. */
-  /* .layout and .main both use the default auto min-height (not 0): that's
-     what gives each a protective floor matching its own children's actual
-     current need (ultimately map-wrap's 320px + controls' real natural
-     height, whatever that is this round). Without it, a tall sidebar (row
-     mode) or the stacked sidebar/footer (mobile, sharing .main's own axis)
-     can squeeze .main shorter than its content needs — the overflow is
-     invisible and visually collides with whatever comes after, instead of
-     the page just growing and scrolling. This auto floor is normally
-     dangerous with an SVG inside (its percentage-sized height resolves
-     through the viewBox aspect ratio and inflates the "auto" calculation
-     regardless of the flex-grow math) — avoided here by taking the svg out
-     of flow below (position: absolute), so it no longer contributes to
-     map-wrap's content-based size at all. */
-  .layout { display: flex; gap: 16px; padding: 12px 24px; align-items: stretch; flex: 1; }
-  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  /* .layout/.main min-height is 0 here (row/two-column mode, e.g. desktop
+     and iPad landscape) deliberately, NOT auto: in this mode .sidebar sits
+     BESIDE .main, and align-items:stretch sizes both to match whichever is
+     tallest — if .main used its "auto" protective floor here, the sidebar's
+     full post-guess reveal (flag/intro/all facts, much taller than the
+     pre-guess "??" placeholders) would stretch .main (and map-wrap, via its
+     flex:1) to match, pushing the controls below the fold. With min-height:0,
+     .main instead stays capped at whatever .layout's viewport-derived height
+     actually is; .sidebar's own overflow-y:auto handles its extra content
+     with an independent internal scroll instead of dragging .main along.
+     This is safe from the earlier ballooning bug (map inflating to
+     width/1.92 regardless of available height) because the svg below is
+     taken out of flow (position: absolute), so it can't feed its viewBox
+     aspect ratio into any ancestor's auto-content-size calculation.
+     The @media (max-width: 900px) block below overrides both back to auto:
+     once .layout stacks into a column, .main and .sidebar share the SAME
+     axis instead of sitting side by side, so .main needs its protective
+     floor there instead — see the comment on that override. */
+  .layout { display: flex; gap: 16px; padding: 12px 24px; align-items: stretch; flex: 1; min-height: 0; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
   .map-wrap {
     position: relative; background: var(--panel); border-radius: 12px; overflow: hidden;
     flex: 1; min-height: 320px;
@@ -214,7 +219,13 @@
   footer a { color: var(--muted); }
   .loading { padding: 60px; text-align: center; color: var(--muted); font-size: 15px; }
   @media (max-width: 900px) {
-    .layout { flex-direction: column; }
+    /* Stacked layout: .main and .sidebar now share the same (vertical) axis
+       instead of sitting side by side, so a tall sidebar/footer can squeeze
+       .main below map-wrap(320px) + controls' real height — restore the
+       auto protective floor here (see the row-mode min-height:0 comment
+       above `.layout`/`.main` for why it's the opposite call in row mode). */
+    .layout { flex-direction: column; min-height: auto; }
+    .main { min-height: auto; }
     .sidebar { width: 100%; }
   }
   footer .feedback-link {
