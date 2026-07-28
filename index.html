@@ -6,6 +6,24 @@
 <title>MapQuiz.world — Country Guessing Game</title>
 <script src="vendor/d3.min.js"></script>
 <script src="vendor/topojson-client.min.js"></script>
+<script>
+  // Plausible analytics, gated to production only — local copies and deploy
+  // previews send nothing. Exception to the self-hosted-dependencies rule:
+  // the analytics script intentionally loads from plausible.io, it's the product.
+  (function () {
+    if (!/^(www\.)?mapquiz\.world$/.test(location.hostname)) {
+      window.plausible = function () {}; // no-op off-domain, so call sites need no conditionals
+      return;
+    }
+    window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments); };
+    window.plausible.init = window.plausible.init || function (i) { window.plausible.o = i || {}; };
+    window.plausible.init();
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://plausible.io/js/pa-7hvi0u-qYlTLl86CS2DoX.js";
+    document.head.appendChild(s);
+  })();
+</script>
 <style>
   :root {
     --bg: #0f1420;
@@ -351,7 +369,9 @@
   Built with <a href="https://d3js.org/">D3.js</a> (ISC).<br>
   Populations, industries, and other country facts are approximate and provided for
   entertainment purposes only. Borders shown follow the underlying map data and do not
-  represent a position on any territorial dispute.
+  represent a position on any territorial dispute.<br>
+  Privacy-friendly analytics by Plausible — no cookies, no personal data. A game preference
+  is stored on your device.
 </footer>
 
 <div class="feedback-overlay" id="feedbackOverlay">
@@ -1489,6 +1509,9 @@ const MODE_KEY = "mapquiz-mode";
   function endRound(won) {
     roundOver = true;
     guessHistory.set(current, won ? "won" : "lost");
+    window.plausible("round_complete", {
+      props: { mode: mode === "test" ? "hard" : "learn", kind: roundKind, result: won ? "won" : "lost" },
+    });
 
     // Learn-mode graduation bookkeeping. Tap rounds: 2 correct taps graduate a
     // country to a typed round. Graduation rounds: a win masters it (benched
