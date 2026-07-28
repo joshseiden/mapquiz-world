@@ -24,7 +24,12 @@
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    min-height: 100dvh; /* not 100vh — iOS Safari's chrome eats into vh */
+    /* height, not min-height: the flex-grow chain below (.layout -> .main ->
+       .map-wrap) needs a *definite* size to divide up, not just a floor —
+       with min-height, an auto-sized body let content needs bubble back up
+       and inflate the whole page instead of capping the map at its floor.
+       Not 100vh — iOS Safari's chrome eats into vh. */
+    height: 100dvh;
     display: flex;
     flex-direction: column;
   }
@@ -46,13 +51,29 @@
      (align-items: stretch, the flexbox default — set explicitly here) so the
      sidebar and the map+controls column are always the same height, and the
      sidebar can scroll independently when its reveal content runs long. */
-  .layout { display: flex; gap: 16px; padding: 12px 24px; align-items: stretch; flex: 1; min-height: 0; }
-  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+  /* .layout and .main both use the default auto min-height (not 0): that's
+     what gives each a protective floor matching its own children's actual
+     current need (ultimately map-wrap's 320px + controls' real natural
+     height, whatever that is this round). Without it, a tall sidebar (row
+     mode) or the stacked sidebar/footer (mobile, sharing .main's own axis)
+     can squeeze .main shorter than its content needs — the overflow is
+     invisible and visually collides with whatever comes after, instead of
+     the page just growing and scrolling. This auto floor is normally
+     dangerous with an SVG inside (its percentage-sized height resolves
+     through the viewBox aspect ratio and inflates the "auto" calculation
+     regardless of the flex-grow math) — avoided here by taking the svg out
+     of flow below (position: absolute), so it no longer contributes to
+     map-wrap's content-based size at all. */
+  .layout { display: flex; gap: 16px; padding: 12px 24px; align-items: stretch; flex: 1; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .map-wrap {
     position: relative; background: var(--panel); border-radius: 12px; overflow: hidden;
     flex: 1; min-height: 320px;
   }
-  svg { display: block; width: 100%; height: 100%; }
+  /* absolute + inset, not width/height:100%: takes the svg out of normal
+     flow so it can't contribute its viewBox aspect ratio to map-wrap's
+     content-based auto-sizing (see .layout/.main comment above) */
+  svg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
   .country { fill: var(--land); stroke: #4a5878; stroke-width: 0.5; vector-effect: non-scaling-stroke; }
   /* Subtle history tints: green = guessed correctly, red = missed */
   .country.done-won { fill: #2c5044; }
