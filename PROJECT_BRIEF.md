@@ -80,7 +80,22 @@ Never commit directly to main except for trivial brief-only edits.
 ## Next Steps
 
 - [ ] Fact-check trivia dataset (Claude-written, approximate) before wide sharing
-- [ ] Install Plausible analytics per plan above
+- [ ] **Install Plausible analytics** (spec updated 2026-07-24 — original 7/10 plan predates Learn mode):
+  - **Prerequisite DONE (2026-07-24):** Plausible account created, site registered. Plausible issued its newer per-site snippet (not the classic `data-domain` tag). Snippet to embed:
+    ```html
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-7hvi0u-qYlTLl86CS2DoX.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+    ```
+  - **Hostname gate (updated for the new snippet):** the per-site script must not LOAD at all off-domain. Implementation: one inline script that checks `location.hostname === "mapquiz.world"` (also allow `www.`) and only then dynamically appends the plausible `<script async src=…>` tag, defines the stub, and calls `plausible.init()`. Local copies and deploy previews send nothing. (Exception to the self-hosted-dependencies rule: the analytics script intentionally loads from plausible.io — it's the product.)
+  - **One custom event, `round_complete`,** fired in `endRound()` via `window.plausible('round_complete', { props: { mode, kind, result } })` — `mode` ("learn"/"hard"), `kind` ("tap"/"typed"/"graduation"), `result` ("won"/"lost"). The queue stub makes this safe even before the script loads; when gated off, define a no-op `window.plausible` so call sites need no conditionals. (If props prove Growth-only after trial and Starter is chosen, fall back to the bare event count.)
+  - Note: Josh enabled Plausible's optional outbound-link / file-download / form-submission auto-tracking in the site config — no code needed for those; the form-submission one will incidentally count feedback-form submits.
+  - Plausible's "Verify Script installation" check will only pass against production (the gate blocks everything else) — run it after merge.
+  - **Footer disclosure line:** "Privacy-friendly analytics by Plausible — no cookies, no personal data. A game preference is stored on your device."
+  - Build on a branch per standing workflow; verify events arrive in the Plausible dashboard from the production deploy (previews are gated off, so final verification happens post-merge on mapquiz.world).
 - [ ] Decide: clean up Wikipedia intros that end mid-sentence with "…"
 
 ## Backlog (added 2026-07-15, from family play-testing)
