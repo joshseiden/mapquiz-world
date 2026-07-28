@@ -24,11 +24,19 @@
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    min-height: 100vh;
+    /* height, not min-height: the flex-grow chain below (.layout -> .main ->
+       .map-wrap) needs a *definite* size to divide up, not just a floor —
+       with min-height, an auto-sized body let content needs bubble back up
+       and inflate the whole page instead of capping the map at its floor.
+       Not 100vh — iOS Safari's chrome eats into vh. */
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
   }
   header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 24px; border-bottom: 1px solid #2a354d;
+    flex-shrink: 0;
   }
   header h1 { font-size: 20px; letter-spacing: 0.5px; }
   header h1 span { color: var(--accent); }
@@ -38,12 +46,39 @@
   .stat .value { font-size: 22px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
   @keyframes statBump { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
   .stat .value.bump { animation: statBump 0.5s ease; color: var(--good); }
-  .layout { display: flex; gap: 16px; padding: 16px 24px; align-items: flex-start; }
-  .main { flex: 1; min-width: 0; }
+  /* Viewport-aware layout: .layout fills the space below the header (flex:1
+     inside the body column); its two children stretch to match heights
+     (align-items: stretch, the flexbox default — set explicitly here) so the
+     sidebar and the map+controls column are always the same height, and the
+     sidebar can scroll independently when its reveal content runs long. */
+  /* .layout/.main min-height is 0 here (row/two-column mode, e.g. desktop
+     and iPad landscape) deliberately, NOT auto: in this mode .sidebar sits
+     BESIDE .main, and align-items:stretch sizes both to match whichever is
+     tallest — if .main used its "auto" protective floor here, the sidebar's
+     full post-guess reveal (flag/intro/all facts, much taller than the
+     pre-guess "??" placeholders) would stretch .main (and map-wrap, via its
+     flex:1) to match, pushing the controls below the fold. With min-height:0,
+     .main instead stays capped at whatever .layout's viewport-derived height
+     actually is; .sidebar's own overflow-y:auto handles its extra content
+     with an independent internal scroll instead of dragging .main along.
+     This is safe from the earlier ballooning bug (map inflating to
+     width/1.92 regardless of available height) because the svg below is
+     taken out of flow (position: absolute), so it can't feed its viewBox
+     aspect ratio into any ancestor's auto-content-size calculation.
+     The @media (max-width: 900px) block below overrides both back to auto:
+     once .layout stacks into a column, .main and .sidebar share the SAME
+     axis instead of sitting side by side, so .main needs its protective
+     floor there instead — see the comment on that override. */
+  .layout { display: flex; gap: 16px; padding: 12px 24px; align-items: stretch; flex: 1; min-height: 0; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
   .map-wrap {
     position: relative; background: var(--panel); border-radius: 12px; overflow: hidden;
+    flex: 1; min-height: 320px;
   }
-  svg { display: block; width: 100%; height: auto; }
+  /* absolute + inset, not width/height:100%: takes the svg out of normal
+     flow so it can't contribute its viewBox aspect ratio to map-wrap's
+     content-based auto-sizing (see .layout/.main comment above) */
+  svg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
   .country { fill: var(--land); stroke: #4a5878; stroke-width: 0.5; vector-effect: non-scaling-stroke; }
   /* Subtle history tints: green = guessed correctly, red = missed */
   .country.done-won { fill: #2c5044; }
@@ -101,7 +136,10 @@
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
     100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
   }
-  .controls { margin-top: 14px; background: var(--panel); border-radius: 12px; padding: 18px; }
+  .controls {
+    margin-top: 12px; background: var(--panel); border-radius: 12px; padding: 16px;
+    flex-shrink: 0; /* natural height always, never squeezed by the map */
+  }
   .guess-row { display: flex; gap: 10px; }
   input[type=text] {
     flex: 1; padding: 12px 14px; font-size: 16px; border-radius: 8px;
@@ -114,11 +152,11 @@
   }
   button:hover { filter: brightness(1.1); }
   #guessBtn.next-state { background: var(--good); color: #06220f; white-space: nowrap; }
-  .guesses { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+  .guesses { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
   .guess-dot { width: 12px; height: 12px; border-radius: 50%; background: #3a4a6b; }
   .guess-dot.used { background: var(--bad); }
   .guesses .label { font-size: 12px; color: var(--muted); margin-left: 6px; }
-  .feedback { margin-top: 12px; font-size: 15px; min-height: 22px; }
+  .feedback { margin-top: 10px; font-size: 15px; min-height: 22px; }
   .wrong-list { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
   .wrong-list .wl-label { font-size: 12px; color: var(--muted); }
   .wrong-chip {
@@ -129,16 +167,18 @@
   .feedback.good { color: var(--good); font-weight: 600; }
   .feedback.bad { color: var(--bad); }
   .learn-question {
-    background: var(--panel2); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+    background: var(--panel2); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
   }
   .learn-question .lq-label {
     font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
     display: block; margin-bottom: 2px;
   }
   #learnQuestionText { font-size: 15px; }
-  .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+  .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .answer-btn {
-    padding: 16px 12px; font-size: 15px; font-weight: 600; border-radius: 10px;
+    /* padding tightened from 16px/12px, but stays comfortably above the 44px
+       iOS tap-target floor (~15/16 -> ~13/12 keeps ~46px measured height) */
+    padding: 13px 12px; font-size: 15px; font-weight: 600; border-radius: 10px;
     background: var(--panel2); color: var(--text); border: 1px solid #3a4a6b; cursor: pointer;
     text-align: center;
   }
@@ -148,6 +188,7 @@
   .answer-btn.wrong-tap { background: rgba(255, 93, 93, 0.18); border-color: var(--bad); color: var(--bad); }
   .sidebar {
     width: 320px; flex-shrink: 0; background: var(--panel); border-radius: 12px; padding: 20px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
   .sidebar .flag { font-size: 44px; line-height: 1; }
   .sidebar h2 { font-size: 22px; margin: 8px 0 2px; }
@@ -178,7 +219,13 @@
   footer a { color: var(--muted); }
   .loading { padding: 60px; text-align: center; color: var(--muted); font-size: 15px; }
   @media (max-width: 900px) {
-    .layout { flex-direction: column; }
+    /* Stacked layout: .main and .sidebar now share the same (vertical) axis
+       instead of sitting side by side, so a tall sidebar/footer can squeeze
+       .main below map-wrap(320px) + controls' real height — restore the
+       auto protective floor here (see the row-mode min-height:0 comment
+       above `.layout`/`.main` for why it's the opposite call in row mode). */
+    .layout { flex-direction: column; min-height: auto; }
+    .main { min-height: auto; }
     .sidebar { width: 100%; }
   }
   footer .feedback-link {
