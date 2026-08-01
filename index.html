@@ -1513,16 +1513,27 @@ const MODE_KEY = "mapquiz-mode";
       props: { mode: mode === "test" ? "hard" : "learn", kind: roundKind, result: won ? "won" : "lost" },
     });
 
-    // Learn-mode graduation bookkeeping. Tap rounds: 2 correct taps graduate a
-    // country to a typed round. Graduation rounds: a win masters it (benched
-    // for the rest of the session); a loss un-graduates it — "no spiral", it
-    // just goes back to multiple choice next time.
+    // Learn-mode graduation bookkeeping. Tap rounds: a single correct tap
+    // graduates a country to a typed round (lowered from 2 — repeat-rework
+    // spec 2026-08-01: waiting for a 2nd win meant tap-won countries kept
+    // resurfacing as unlabeled tap rounds while still ungraduated). The one
+    // return is scheduled explicitly (like the miss-recycle splice below,
+    // reusing the retired two-hint-win 15-25 round window) rather than left
+    // to whenever the deck naturally reshuffles — so it comes back
+    // predictably, always as the labeled graduation round (promotion pill),
+    // never as a second unlabeled tap round. Graduation rounds: a win masters
+    // it (benched for the rest of the session); a loss un-graduates it —
+    // "no spiral", it just goes back to multiple choice next time, via the
+    // ordinary miss-recycle path below (review badge).
     if (roundKind === "tap") {
       mapTint.set(current, won ? "tap" : "lost");
       if (won) {
         const st = learnState.get(current);
         st.tapCorrect++;
-        if (st.tapCorrect >= 2) st.graduated = true;
+        st.graduated = true;
+        const ahead = 15 + Math.floor(Math.random() * 11);  // 15-25 rounds
+        const idx = Math.max(0, remaining.length - ahead);
+        remaining.splice(idx, 0, current);
       }
     } else if (roundKind === "graduation") {
       if (won) {
