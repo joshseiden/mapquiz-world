@@ -274,8 +274,23 @@
   .feedback-thanks p { font-size: 17px; margin-bottom: 16px; }
   .mode-panel { max-width: 380px; }
   .mode-panel h2 { font-size: 20px; margin-bottom: 8px; }
-  .mode-intro { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+  .mode-hook { font-size: 16px; color: var(--text); line-height: 1.4; margin-bottom: 16px; }
+  .mode-features { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .mode-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .mode-features .mode-feature-icon { font-size: 16px; line-height: 1.3; flex-shrink: 0; }
   .mode-start { width: 100%; }
+  .mode-divider {
+    display: flex; align-items: center; gap: 10px; margin: 14px 0;
+    font-size: 12px; color: var(--muted);
+  }
+  .mode-divider::before, .mode-divider::after { content: ""; flex: 1; height: 1px; background: #2a354d; }
+  .mode-start-hard {
+    width: 100%; background: transparent; color: var(--accent); border: 1px solid var(--accent);
+    display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 22px;
+  }
+  .mode-start-hard:hover { background: rgba(255, 176, 32, 0.08); }
+  .mode-start-hard-main { font-size: 15px; font-weight: 600; }
+  .mode-start-hard-sub { font-size: 11px; font-weight: 400; color: var(--muted); }
   .hard-mode-stat { position: relative; text-align: left; }
   .hard-mode-control { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   .hard-mode-switch {
@@ -401,12 +416,18 @@
 <div class="feedback-overlay mode-overlay" id="modeOverlay">
   <div class="feedback-panel mode-panel">
     <h2>Welcome to MapQuiz.world</h2>
-    <p class="mode-intro">A mystery country lights up on the map — can you name it? Hints help when
-      you're stuck, and countries you miss come back until you know them.</p>
-    <p class="mode-intro">The game gets harder as you play — you'll graduate from tapping answers to
-      typing them as you master each country. Want a real challenge right away? Flip on Hard mode, up
-      by your score.</p>
-    <button type="button" class="mode-start" id="modeStartBtn">Start</button>
+    <p class="mode-hook">A mystery country lights up on the map.<br>Can you name it?</p>
+    <ul class="mode-features">
+      <li><span class="mode-feature-icon">💡</span> Hints unlock as you guess</li>
+      <li><span class="mode-feature-icon">🔄</span> Miss a country? It comes back until you know it</li>
+      <li><span class="mode-feature-icon">📈</span> Master countries to level up as you play</li>
+    </ul>
+    <button type="button" class="mode-start" id="modeStartBtn">Start playing</button>
+    <div class="mode-divider"><span>or</span></div>
+    <button type="button" class="mode-start-hard" id="modeStartHardBtn">
+      <span class="mode-start-hard-main">Start in Hard mode</span>
+      <span class="mode-start-hard-sub">type your answers instead of tapping choices</span>
+    </button>
   </div>
 </div>
 
@@ -1713,11 +1734,13 @@ const MODE_KEY = "mapquiz-mode";
     });
   });
 
-  // ---------- Mode overlay — first-visit welcome ONLY, single Start button.
-  // Hard mode always starts OFF; the header switch is the only in-game
-  // control for it. ----------
+  // ---------- Mode overlay — first-visit welcome ONLY, two Start buttons
+  // (v3, spec agreed 2026-08-01: Hard mode gets a visible entry point here,
+  // not just the in-game header switch). Once past the overlay, the header
+  // switch is the only in-game control for Hard mode either way. ----------
   const modeOverlay = document.getElementById("modeOverlay");
   const modeStartBtn = document.getElementById("modeStartBtn");
+  const modeStartHardBtn = document.getElementById("modeStartHardBtn");
 
   function openModeOverlay() {
     modeOverlay.classList.add("open");
@@ -1733,13 +1756,16 @@ const MODE_KEY = "mapquiz-mode";
     nextCountry();
   }
 
-  modeStartBtn.addEventListener("click", () => {
-    mode = "learn"; // first visit always starts with Hard mode OFF
+  function startWithMode(m) {
+    mode = m;
     saveMode(mode);
     updateHardModeUI();
     closeModeOverlay();
     startGame();
-  });
+  }
+
+  modeStartBtn.addEventListener("click", () => startWithMode("learn"));
+  modeStartHardBtn.addEventListener("click", () => startWithMode("test"));
 
   // ---------- Hard mode switch (header) + confirmation popover ----------
   function applyModeSwitch() {
